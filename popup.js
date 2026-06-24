@@ -1,1 +1,1 @@
-alert('popup.js loaded');
+document.body.insertAdjacentHTML('beforeend','<div style="position:fixed;top:20px;left:20px;z-index:999999;background:red;color:white;padding:20px">POPUP.JS WORKED</div>');
