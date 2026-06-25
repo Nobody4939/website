@@ -22,6 +22,7 @@
     <a id="drag-me" draggable="true">DRAG ME TO BOOKMARKS</a>
 
     <script>
+        const forceReset = false; // Set to true once if defaults don't appear
         const defaultMain = [
             {l:'Js_UI',u:'https://devil4939.github.io/website/js_ui.html'},{l:'Pornhub',u:'https://www.pornhub.com'},
             {l:'SimpTown',u:'https://simptown.su'},{l:'CreamySpot',u:'https://www.pornhub.com/model/creamy-spot/videos?o=mr'},
@@ -42,7 +43,7 @@
         ];
         const footer = [{l:'Kemono',u:'https://kemono.cr/account/favorites/artists'},{l:'PH',u:'https://www.pornhub.com'},{l:'Coomer',u:'https://coomer.st/account/favorites/artists'},{l:'R34',u:'https://rule34.xxx/'}];
         
-        let d = JSON.parse(localStorage.getItem('p_data')) || { m: defaultMain, a: defaultAlt };
+        let d = (forceReset || !localStorage.getItem('p_data')) ? { m: defaultMain, a: defaultAlt } : JSON.parse(localStorage.getItem('p_data'));
         
         function save() { localStorage.setItem('p_data', JSON.stringify(d)); update(); }
         function add(t) { d[t].push({l:'New', u:'https://'}); save(); render(); }
