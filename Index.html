@@ -2,45 +2,45 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Dashboard</title>
+    <title>Portal Admin</title>
     <style>
         body { background: #0e0e0e; color: #eee; font-family: sans-serif; padding: 20px; }
-        .box { background: #151515; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
-        input { background: #222; color: #fff; border: 1px solid #444; padding: 8px; width: 45%; margin: 2px; }
-        #bookmarklet { display: inline-block; padding: 20px; background: #007bff; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; cursor: grab; }
+        .box { background: #151515; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #333; }
+        input { background: #222; color: #fff; border: 1px solid #444; padding: 8px; width: 40%; border-radius: 4px; }
+        button { background: #333; color: #fff; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; }
+        #install { display: block; padding: 20px; background: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
     <h2>Portal Editor</h2>
-    <div class="box"><h3>Main List</h3><div id="main-list"></div><button onclick="add('main')">+ Add</button></div>
-    <div class="box"><h3>Itch.io List</h3><div id="itch-list"></div><button onclick="add('itch')">+ Add</button></div>
-    <div class="box"><h3>Footer Links</h3><div id="foot-list"></div><button onclick="add('foot')">+ Add</button></div>
-    
-    <a id="bookmarklet">DRAG ME TO BOOKMARKS</a>
+    <div class="box"><h3>Tabs List</h3><div id="m-list"></div><button onclick="add('m')">+ Add</button></div>
+    <div class="box"><h3>Itch.io List</h3><div id="a-list"></div><button onclick="add('a')">+ Add</button></div>
+    <a id="install">DRAG ME TO BOOKMARKS</a>
 
     <script>
-        let data = JSON.parse(localStorage.getItem('portal_data')) || {main:[], itch:[], foot:[]};
-        function save() { localStorage.setItem('portal_data', JSON.stringify(data)); render(); }
-        function add(t) { data[t].push({l:'New', u:'https://'}); save(); }
-        function del(t, i) { data[t].splice(i, 1); save(); }
+        let d = JSON.parse(localStorage.getItem('p_data')) || {m:[], a:[]};
+        function save() { localStorage.setItem('p_data', JSON.stringify(d)); render(); }
+        function add(t) { d[t].push({l:'New', u:'https://'}); save(); }
+        function del(t, i) { d[t].splice(i, 1); save(); }
         
         function render() {
-            ['main', 'itch', 'foot'].forEach(t => {
-                const cont = document.getElementById(t + '-list');
-                cont.innerHTML = '';
-                data[t].forEach((item, i) => {
-                    cont.innerHTML += `<div><input value="${item.l}" onchange="data['${t}'][${i}].l=this.value; save()"> 
-                                       <input value="${item.u}" onchange="data['${t}'][${i}].u=this.value; save()">
-                                       <button onclick="del('${t}',${i})">X</button></div>`;
+            ['m', 'a'].forEach(t => {
+                const c = document.getElementById(t + '-list');
+                c.innerHTML = '';
+                d[t].forEach((it, i) => {
+                    c.innerHTML += `<div><input value="${it.l}" onchange="d['${t}'][${i}].l=this.value; save()"> <input value="${it.u}" onchange="d['${t}'][${i}].u=this.value; save()"> <button onclick="del('${t}',${i})">X</button></div>`;
                 });
             });
-            update();
+            updateBookmarklet();
         }
 
-        function update() {
-            const rawJs = `(function(){const d=${JSON.stringify(data)};if(document.getElementById('cg-p'))return;const s=document.createElement('style');s.textContent='.cg-p{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2147483647;display:flex;justify-content:center;align-items:center;}.cg-b{background:#0e0e0e;width:300px;border-radius:10px;color:#fff;padding:15px;font-family:sans-serif;}.cg-btn{display:block;width:100%;padding:10px;margin:5px 0;background:#222;border:0;color:#fff;border-radius:5px;}';document.head.appendChild(s);const o=document.createElement('div');o.id='cg-p';const c=document.createElement('div');c.className='cg-b';d.main.forEach(i=>{const b=document.createElement('button');b.className='cg-btn';b.innerText=i.l;b.onclick=()=>location.href=i.u;c.appendChild(b);});const x=document.createElement('button');x.className='cg-btn';x.innerText='Close';x.onclick=()=>o.remove();c.appendChild(x);o.appendChild(c);document.body.appendChild(o);})()`;
-            const b64 = btoa(rawJs);
-            document.getElementById('bookmarklet').href = 'javascript:eval(atob("' + b64 + '"))';
+        function updateBookmarklet() {
+            // This is the compressed version of your exact UI structure
+            const js = `(function(){if(document.getElementById('cg-o'))return;const d=${JSON.stringify(d)};const s=document.createElement('style');s.textContent='.cg-o{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2147483647;display:flex;align-items:center;justify-content:center;}.cg-b{width:300px;background:#0e0e0e;border-radius:10px;color:#eee;max-height:60vh;overflow:hidden;display:flex;flex-direction:column;}.cg-h{padding:10px;background:#151515;text-align:center;border-bottom:1px solid #222;}.cg-l{flex:1;overflow-y:auto;padding:10px;}.cg-btn{display:block;width:100%;padding:9px;margin:5px 0;border:0;border-radius:6px;background:#222;color:#eee;text-align:left;}';document.head.appendChild(s);const o=document.createElement('div');o.className='cg-o';o.id='cg-o';const c=document.createElement('div');c.className='cg-b';const h=document.createElement('div');h.className='cg-h';h.innerText='Secret Tabs';c.appendChild(h);const l=document.createElement('div');l.className='cg-l';let cur='m';function ren(){l.innerHTML='';(cur=='m'?d.m:d.a).forEach(i=>{const b=document.createElement('button');b.className='cg-btn';b.innerText=i.l;b.onclick=()=>location.href=i.u;l.appendChild(b);});}ren();c.appendChild(l);const f=document.createElement('div');f.className='cg-h';const sw=document.createElement('button');sw.className='cg-btn';sw.innerText='Switch List';sw.onclick=()=>{cur=cur=='m'?'a':'m';ren();};const cls=document.createElement('button');cls.className='cg-btn';cls.innerText='Close';cls.onclick=()=>o.remove();f.appendChild(sw);f.appendChild(cls);c.appendChild(f);o.appendChild(c);document.body.appendChild(o);})()`;
+            
+            // Create Blob to avoid drag-and-drop security blocks
+            const blob = new Blob(['javascript:' + js], {type: 'text/html'});
+            document.getElementById('install').href = URL.createObjectURL(blob);
         }
         render();
     </script>
