@@ -1,62 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Manager</title>
     <style>
-        body { background: #121212; color: white; font-family: sans-serif; padding: 20px; }
-        .list-item { margin-bottom: 10px; background: #222; padding: 10px; border-radius: 5px; display: flex; gap: 5px; }
-        input { background: #333; color: white; border: none; padding: 8px; width: 40%; border-radius: 4px; }
-        .btn-add { background: #28a745; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; margin-top: 10px; }
-        .btn-del { background: #dc3545; color: white; border: none; padding: 8px; cursor: pointer; border-radius: 5px; }
-        #bookmarklet { display: block; margin-top: 30px; text-align: center; background: #007bff; padding: 20px; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; }
+        body { background: #0e0e0e; color: #eee; font-family: sans-serif; margin: 0; padding: 15px; }
+        .box { background: #151515; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #333; }
+        input { background: #222; color: #fff; border: 1px solid #444; padding: 10px; width: 45%; border-radius: 5px; }
+        button { background: #333; color: #fff; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
+        #bookmarklet { display: block; text-align: center; background: #007bff; padding: 15px; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h1>Portal Manager</h1>
-    <div id="editor"></div>
-    <button class="btn-add" onclick="addLink()">+ Add New Site</button>
+    <h2>Portal Manager</h2>
+    <div class="box">
+        <h3>Main List</h3>
+        <div id="main-list"></div>
+        <button onclick="add('main')">+ Add</button>
+    </div>
+    <div class="box">
+        <h3>Itch.io List</h3>
+        <div id="itch-list"></div>
+        <button onclick="add('itch')">+ Add</button>
+    </div>
     <a id="bookmarklet">DRAG ME TO BOOKMARKS</a>
 
     <script>
-        // Load from memory or default
-        let links = JSON.parse(localStorage.getItem('portal_links')) || [{l: 'Pornhub', u: 'https://www.pornhub.com'}];
-
-        function update() {
-            // Save to memory
-            localStorage.setItem('portal_links', JSON.stringify(links));
-            
-            // Build the encoded list
-            const data = links.map(x => x.l.replace(/\|/g, '') + "|" + x.u).join("*");
-            
-            // Generate the compressed bookmarklet
-            const code = `javascript:(function(){const m='${data}'.split('*');const%20s=document.createElement('style');s.textContent='.cg-o{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:2147483647;display:flex;justify-content:center;align-items:center;}.cg-b{width:300px;background:#151515;padding:15px;border-radius:10px;color:#fff;font-family:sans-serif;max-height:80vh;overflow-y:auto;}.cg-btn{display:block;width:100%;padding:10px;margin:5px%200;background:#222;color:#fff;border:0;border-radius:5px;text-align:left;}';document.head.appendChild(s);const%20o=document.createElement('div');o.className='cg-o';const%20c=document.createElement('div');c.className='cg-b';m.forEach(i=>{const%20p=i.split('|');const%20b=document.createElement('button');b.className='cg-btn';b.innerText=p[0];b.onclick=()=>location.href=p[1];c.appendChild(b);});const%20x=document.createElement('button');x.className='cg-btn';x.innerText='✕%20Close';x.style.background='#442222';x.onclick=()=>o.remove();c.appendChild(x);o.appendChild(c);document.body.appendChild(o);})()`;
-            document.getElementById('bookmarklet').href = code;
-        }
-
-        function addLink() {
-            links.push({l: 'New Site', u: 'https://'});
-            render();
-        }
-
-        function delLink(i) {
-            links.splice(i, 1);
-            render();
-        }
-
+        let data = JSON.parse(localStorage.getItem('portal_data')) || {main:[], itch:[]};
+        function save() { localStorage.setItem('portal_data', JSON.stringify(data)); render(); }
+        function add(type) { data[type].push({l:'New', u:'https://'}); save(); }
+        function del(type, i) { data[type].splice(i, 1); save(); }
+        
         function render() {
-            const container = document.getElementById('editor');
-            container.innerHTML = '';
-            links.forEach((link, i) => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.innerHTML = `
-                    <input value="${link.l}" onchange="links[${i}].l=this.value; update()"> 
-                    <input value="${link.u}" onchange="links[${i}].u=this.value; update()">
-                    <button class="btn-del" onclick="delLink(${i})">X</button>
-                `;
-                container.appendChild(div);
+            ['main', 'itch'].forEach(type => {
+                const cont = document.getElementById(type + '-list');
+                cont.innerHTML = '';
+                data[type].forEach((item, i) => {
+                    cont.innerHTML += `<div style="margin-bottom:8px">
+                        <input value="${item.l}" onchange="data['${type}'][${i}].l=this.value; save()">
+                        <input value="${item.u}" onchange="data['${type}'][${i}].u=this.value; save()">
+                        <button onclick="del('${type}',${i})">X</button>
+                    </div>`;
+                });
             });
-            update();
+            updateBookmarklet();
+        }
+
+        function updateBookmarklet() {
+            const code = `javascript:(function(){const d=${JSON.stringify(data)};const%20s=document.createElement('style');s.textContent='.cg-o{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:2147483647;display:flex;justify-content:center;align-items:center;}.cg-b{width:300px;background:#151515;padding:15px;border-radius:10px;color:#fff;max-height:80vh;overflow-y:auto;}.cg-btn{display:block;width:100%;padding:10px;margin:5px%200;background:#222;color:#fff;border:0;border-radius:5px;text-align:left;}';document.head.appendChild(s);const%20o=document.createElement('div');o.className='cg-o';const%20c=document.createElement('div');c.className='cg-b';const%20h=document.createElement('h3');h.innerText='Secret Tabs';c.appendChild(h);d.main.forEach(i=>{const%20b=document.createElement('button');b.className='cg-btn';b.innerText=i.l;b.onclick=()=>location.href=i.u;c.appendChild(b);});const%20h2=document.createElement('h3');h2.innerText='Itch IO';c.appendChild(h2);d.itch.forEach(i=>{const%20b=document.createElement('button');b.className='cg-btn';b.innerText=i.l;b.onclick=()=>location.href=i.u;c.appendChild(b);});const%20x=document.createElement('button');x.className='cg-btn';x.innerText='Close';x.style.marginTop='20px';x.onclick=()=>o.remove();c.appendChild(x);o.appendChild(c);document.body.appendChild(o);})()`;
+            document.getElementById('bookmarklet').href = code;
         }
         render();
     </script>
