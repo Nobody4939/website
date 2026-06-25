@@ -1,54 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Manager</title>
+    <title>Portal Dashboard</title>
     <style>
-        body { background: #0e0e0e; color: #eee; font-family: sans-serif; margin: 0; padding: 15px; }
-        .box { background: #151515; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #333; }
-        input { background: #222; color: #fff; border: 1px solid #444; padding: 10px; width: 45%; border-radius: 5px; }
-        button { background: #333; color: #fff; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
-        #bookmarklet { display: block; text-align: center; background: #007bff; padding: 15px; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; margin-top: 20px; }
+        body { background: #0e0e0e; color: #eee; font-family: sans-serif; padding: 20px; }
+        .box { background: #151515; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        input { background: #222; color: #fff; border: 1px solid #444; padding: 8px; width: 45%; margin: 2px; }
+        #bookmarklet { display: inline-block; padding: 20px; background: #007bff; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; cursor: grab; }
     </style>
 </head>
 <body>
-    <h2>Portal Manager</h2>
-    <div class="box">
-        <h3>Main List</h3>
-        <div id="main-list"></div>
-        <button onclick="add('main')">+ Add</button>
-    </div>
-    <div class="box">
-        <h3>Itch.io List</h3>
-        <div id="itch-list"></div>
-        <button onclick="add('itch')">+ Add</button>
-    </div>
+    <h2>Portal Editor</h2>
+    <div class="box"><h3>Main List</h3><div id="main-list"></div><button onclick="add('main')">+ Add</button></div>
+    <div class="box"><h3>Itch.io List</h3><div id="itch-list"></div><button onclick="add('itch')">+ Add</button></div>
+    <div class="box"><h3>Footer Links</h3><div id="foot-list"></div><button onclick="add('foot')">+ Add</button></div>
+    
     <a id="bookmarklet">DRAG ME TO BOOKMARKS</a>
 
     <script>
-        let data = JSON.parse(localStorage.getItem('portal_data')) || {main:[], itch:[]};
+        let data = JSON.parse(localStorage.getItem('portal_data')) || {main:[], itch:[], foot:[]};
         function save() { localStorage.setItem('portal_data', JSON.stringify(data)); render(); }
-        function add(type) { data[type].push({l:'New', u:'https://'}); save(); }
-        function del(type, i) { data[type].splice(i, 1); save(); }
+        function add(t) { data[t].push({l:'New', u:'https://'}); save(); }
+        function del(t, i) { data[t].splice(i, 1); save(); }
         
         function render() {
-            ['main', 'itch'].forEach(type => {
-                const cont = document.getElementById(type + '-list');
+            ['main', 'itch', 'foot'].forEach(t => {
+                const cont = document.getElementById(t + '-list');
                 cont.innerHTML = '';
-                data[type].forEach((item, i) => {
-                    cont.innerHTML += `<div style="margin-bottom:8px">
-                        <input value="${item.l}" onchange="data['${type}'][${i}].l=this.value; save()">
-                        <input value="${item.u}" onchange="data['${type}'][${i}].u=this.value; save()">
-                        <button onclick="del('${type}',${i})">X</button>
-                    </div>`;
+                data[t].forEach((item, i) => {
+                    cont.innerHTML += `<div><input value="${item.l}" onchange="data['${t}'][${i}].l=this.value; save()"> 
+                                       <input value="${item.u}" onchange="data['${t}'][${i}].u=this.value; save()">
+                                       <button onclick="del('${t}',${i})">X</button></div>`;
                 });
             });
-            updateBookmarklet();
+            update();
         }
 
-        function updateBookmarklet() {
-            const code = `javascript:(function(){const d=${JSON.stringify(data)};const%20s=document.createElement('style');s.textContent='.cg-o{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:2147483647;display:flex;justify-content:center;align-items:center;}.cg-b{width:300px;background:#151515;padding:15px;border-radius:10px;color:#fff;max-height:80vh;overflow-y:auto;}.cg-btn{display:block;width:100%;padding:10px;margin:5px%200;background:#222;color:#fff;border:0;border-radius:5px;text-align:left;}';document.head.appendChild(s);const%20o=document.createElement('div');o.className='cg-o';const%20c=document.createElement('div');c.className='cg-b';const%20h=document.createElement('h3');h.innerText='Secret Tabs';c.appendChild(h);d.main.forEach(i=>{const%20b=document.createElement('button');b.className='cg-btn';b.innerText=i.l;b.onclick=()=>location.href=i.u;c.appendChild(b);});const%20h2=document.createElement('h3');h2.innerText='Itch IO';c.appendChild(h2);d.itch.forEach(i=>{const%20b=document.createElement('button');b.className='cg-btn';b.innerText=i.l;b.onclick=()=>location.href=i.u;c.appendChild(b);});const%20x=document.createElement('button');x.className='cg-btn';x.innerText='Close';x.style.marginTop='20px';x.onclick=()=>o.remove();c.appendChild(x);o.appendChild(c);document.body.appendChild(o);})()`;
-            document.getElementById('bookmarklet').href = code;
+        function update() {
+            const rawJs = `(function(){const d=${JSON.stringify(data)};if(document.getElementById('cg-p'))return;const s=document.createElement('style');s.textContent='.cg-p{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2147483647;display:flex;justify-content:center;align-items:center;}.cg-b{background:#0e0e0e;width:300px;border-radius:10px;color:#fff;padding:15px;font-family:sans-serif;}.cg-btn{display:block;width:100%;padding:10px;margin:5px 0;background:#222;border:0;color:#fff;border-radius:5px;}';document.head.appendChild(s);const o=document.createElement('div');o.id='cg-p';const c=document.createElement('div');c.className='cg-b';d.main.forEach(i=>{const b=document.createElement('button');b.className='cg-btn';b.innerText=i.l;b.onclick=()=>location.href=i.u;c.appendChild(b);});const x=document.createElement('button');x.className='cg-btn';x.innerText='Close';x.onclick=()=>o.remove();c.appendChild(x);o.appendChild(c);document.body.appendChild(o);})()`;
+            const b64 = btoa(rawJs);
+            document.getElementById('bookmarklet').href = 'javascript:eval(atob("' + b64 + '"))';
         }
         render();
     </script>
