@@ -5,29 +5,23 @@
     <title>Portal Manager</title>
     <style>
         body { background: #0a0a0a; color: #d1d1d1; font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
-        .card { background: #161616; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #2a2a2a; }
-        .row { display: flex; gap: 8px; margin-bottom: 8px; }
-        input { background: #222; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 6px; flex: 1; }
-        button { background: #333; color: #fff; border: none; padding: 10px 15px; cursor: pointer; border-radius: 6px; }
-        #drag-me { display: block; padding: 25px; background: linear-gradient(135deg, #007bff, #0056b3); color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; cursor: move; border: 2px solid #fff; }
+        .card { background: #161616; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #222; }
+        input { background: #222; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 6px; width: 40%; }
+        button { background: #333; color: #fff; border: none; padding: 10px; cursor: pointer; border-radius: 6px; }
+        #drag-me { display: block; padding: 25px; background: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; border: 2px solid #fff; }
     </style>
 </head>
 <body>
     <h2>Portal Editor</h2>
-    <div class="card"><h3>Tabs List</h3><div id="m-list"></div><button onclick="add('m')">+ Add</button></div>
-    <div class="card"><h3>Itch.io List</h3><div id="a-list"></div><button onclick="add('a')">+ Add</button></div>
+    <div class="card"><h3>Tabs</h3><div id="m-list"></div><button onclick="add('m')">+ Add</button></div>
+    <div class="card"><h3>Itch.io</h3><div id="a-list"></div><button onclick="add('a')">+ Add</button></div>
     <a id="drag-me" draggable="true">DRAG ME TO BOOKMARKS</a>
 
     <script>
-        const footerButtons = [
-            { label: 'Kemono', url: 'https://kemono.cr/account/favorites/artists' },
-            { label: 'PH', url: 'https://www.pornhub.com' },
-            { label: 'Coomer', url: 'https://coomer.st/account/favorites/artists' },
-            { label: 'Rule34', url: 'https://rule34.xxx/index.php?page=post&s=list&tags=yuri' }
-        ];
-
+        const footer = [{l:'Kemono',u:'https://kemono.cr/account/favorites/artists'},{l:'PH',u:'https://www.pornhub.com'},{l:'Coomer',u:'https://coomer.st/account/favorites/artists'},{l:'Rule34',u:'https://rule34.xxx/'}];
         let d = JSON.parse(localStorage.getItem('p_data')) || { m: [], a: [] };
-        function save() { localStorage.setItem('p_data', JSON.stringify(d)); updateLink(); }
+        
+        function save() { localStorage.setItem('p_data', JSON.stringify(d)); update(); }
         function add(t) { d[t].push({l:'New', u:'https://'}); save(); render(); }
         function del(t, i) { d[t].splice(i, 1); save(); render(); }
         
@@ -36,17 +30,18 @@
                 const c = document.getElementById(t + '-list');
                 c.innerHTML = '';
                 d[t].forEach((it, i) => {
-                    c.innerHTML += `<div class="row"><input value="${it.l}" onchange="d['${t}'][${i}].l=this.value; save()"> <input value="${it.u}" onchange="d['${t}'][${i}].u=this.value; save()"> <button onclick="del('${t}',${i})">✕</button></div>`;
+                    c.innerHTML += `<div><input value="${it.l}" onchange="d['${t}'][${i}].l=this.value; save()"> <input value="${it.u}" onchange="d['${t}'][${i}].u=this.value; save()"> <button onclick="del('${t}',${i})">X</button></div>`;
                 });
             });
         }
 
-        function updateLink() {
-            const js = `(function(){if(document.getElementById('cg-overlay'))return;const main=${JSON.stringify(d.m)},alt=${JSON.stringify(d.a)},foot=${JSON.stringify(footerButtons)};const s=document.createElement('style');s.textContent=\`.cg-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999999;display:flex;align-items:center;justify-content:center;}.cg-pp{background:#0e0e0e;width:300px;max-width:90vw;border-radius:10px;color:#fff;overflow:hidden;display:flex;flex-direction:column;}.cg-hd{padding:10px;background:#151515;border-bottom:1px solid #333;display:flex;justify-content:space-between;}.cg-lst{flex:1;padding:10px;overflow-y:auto;}.cg-btn{width:100%;padding:10px;margin:5px 0;border:0;border-radius:6px;background:#222;color:#fff;text-align:left;}.cg-ft{padding:10px;background:#151515;display:flex;justify-content:center;gap:10px;}.cg-fbt{width:35px;height:35px;border:0;border-radius:8px;background:#333;color:#fff;}\`;document.head.appendChild(s);const ov=document.createElement('div');ov.className='cg-ov';ov.id='cg-overlay';const pp=document.createElement('div');pp.className='cg-pp';const hd=document.createElement('div');hd.className='cg-hd';const tt=document.createElement('div');tt.innerText='Secret Tabs';const cls=document.createElement('button');cls.innerText='✕';cls.onclick=()=>ov.remove();hd.append(tt,cls);const lst=document.createElement('div');lst.className='cg-lst';function lp(b,u){let t;b.addEventListener('touchstart',()=>t=setTimeout(()=>window.open(u,'_blank'),500));b.addEventListener('touchend',()=>clearTimeout(t));}function ren(it,ti){lst.innerHTML='';tt.innerText=ti;it.forEach(i=>{const b=document.createElement('button');b.className='cg-btn';b.innerText=i.l;b.onclick=()=>location.href=i.u;lp(b,i.u);lst.appendChild(b);});}ren(main,'Secret Tabs');const ft=document.createElement('div');ft.className='cg-ft';let cur='m';const sw=document.createElement('button');sw.className='cg-fbt';sw.innerText='⇆';sw.onclick=()=>{cur=cur=='m'?'a':'m';ren(cur=='m'?main:alt,cur=='m'?'Secret Tabs':'Itch IO');};ft.appendChild(sw);foot.forEach(i=>{const b=document.createElement('button');b.className='cg-fbt';b.innerText=i.l.charAt(0);b.onclick=()=>location.href=i.u;lp(b,i.u);ft.appendChild(b);});pp.append(hd,lst,ft);ov.appendChild(pp);document.body.appendChild(ov);ov.onclick=e=>{if(e.target===ov)ov.remove();};})()`;
+        function update() {
+            const css = ".cg-o{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999999;display:flex;align-items:center;justify-content:center;}.cg-p{background:#0e0e0e;width:300px;border-radius:10px;color:#fff;overflow:hidden;display:flex;flex-direction:column;}.cg-h{padding:10px;background:#151515;border-bottom:1px solid #333;text-align:center;}.cg-l{flex:1;padding:10px;overflow-y:auto;}.cg-btn{width:100%;padding:10px;margin:5px 0;border:0;background:#222;color:#fff;text-align:left;border-radius:6px;}.cg-f{padding:10px;background:#151515;display:flex;justify-content:center;gap:10px;}.cg-fb{width:35px;height:35px;border:0;background:#333;color:#fff;border-radius:8px;}";
+            const js = `(function(){if(document.getElementById('cg-o'))return;const s=document.createElement('style');s.textContent='${css}';document.head.appendChild(s);const o=document.createElement('div');o.className='cg-o';o.id='cg-o';const p=document.createElement('div');p.className='cg-p';const h=document.createElement('div');h.className='cg-h';h.innerText='Secret Tabs';p.appendChild(h);const l=document.createElement('div');l.className='cg-l';const data={m:${JSON.stringify(d.m)},a:${JSON.stringify(d.a)},f:${JSON.stringify(footer)}};let cur='m';function ren(t){l.innerHTML='';data[t].forEach(i=>{const b=document.createElement('button');b.className='cg-btn';b.innerText=i.l;b.onclick=()=>location.href=i.u;l.appendChild(b);});}ren('m');p.appendChild(l);const f=document.createElement('div');f.className='cg-f';const sw=document.createElement('button');sw.className='cg-fb';sw.innerText='⇆';sw.onclick=()=>{cur=cur=='m'?'a':'m';ren(cur);};f.appendChild(sw);data.f.forEach(i=>{const b=document.createElement('button');b.className='cg-fb';b.innerText=i.l.charAt(0);b.onclick=()=>location.href=i.u;f.appendChild(b);});p.appendChild(f);o.appendChild(p);document.body.appendChild(o);o.onclick=e=>{if(e.target==o)o.remove();};})()`;
             document.getElementById('drag-me').href = 'javascript:' + js;
         }
         render();
-        updateLink();
+        update();
     </script>
 </body>
 </html>
