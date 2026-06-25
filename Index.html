@@ -6,10 +6,9 @@
     <style>
         body { background: #0a0a0a; color: #d1d1d1; font-family: sans-serif; padding: 15px; max-width: 500px; margin: auto; }
         .card { background: #161616; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #222; }
-        /* Tightened row: Label (30%) + URL (flex: 1) + Delete Button */
         .row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
         input { background: #222; color: #fff; border: 1px solid #333; padding: 6px; border-radius: 4px; font-size: 12px; }
-        input:nth-child(1) { width: 25%; }
+        input:nth-child(1) { width: 30%; }
         input:nth-child(2) { flex: 1; }
         button { background: #333; color: #fff; border: none; padding: 6px 8px; cursor: pointer; border-radius: 4px; font-size: 12px; }
         .del-btn { background: #552222; }
@@ -23,8 +22,11 @@
     <a id="drag-me" draggable="true">DRAG ME TO BOOKMARKS</a>
 
     <script>
+        const defaultMain = [{l:'Js_UI',u:'https://devil4939.github.io/website/js_ui.html'},{l:'Pornhub',u:'https://www.pornhub.com'},{l:'SimpTown',u:'https://simptown.su'},{l:'CreamySpot',u:'https://www.pornhub.com/model/creamy-spot/videos?o=mr'},{l:'YourShyCrush',u:'https://www.pornhub.com/model/yourshycrush'},{l:'LiiMewls',u:'https://www.pornhub.com/model/liimewls/videos'},{l:'ThePerfectStorm14',u:'https://www.pornhub.com/model/theperfectstorm14'},{l:'WowMarie',u:'https://www.pornhub.com/model/wowmarie/videos'},{l:'MeeHutao',u:'https://www.pornhub.com/model/meehutao/videos?o=mr'},{l:'Rosie and Alena',u:'https://www.pornhub.com/model/rosie-and-alena/videos?o=mr'},{l:'20Lesbian25',u:'https://www.pornhub.com/model/20lesbian25'},{l:'Jane Laneee',u:'https://www.pornhub.com/model/jane-laneee/videos?o=mr'},{l:'Lane217',u:'https://www.pornhub.com/model/lane217/videos?o=mr'},{l:'AshMochi69',u:'https://www.pornhub.com/model/ashmochi69/videos?o=mr'},{l:'Eve',u:'https://www.pornhub.com/model/eve/videos?o=mr'},{l:'Leah Meow',u:'https://www.pornhub.com/model/leah-meow?o=mr'},{l:'SpiritJOI',u:'https://www.pornhub.com/model/spiritjoi?o=mr'}];
+        const defaultAlt = [{l:'Hazelnut Latte',u:'https://radlord.itch.io/hazelnut-latte'},{l:'Midnight Shifts',u:'https://icanfixthatgames.itch.io/midnight-shifts-with-femboy'},{l:'Haunted',u:'https://nuteku.itch.io/haunted-by-femboy'},{l:'Femboy Futa',u:'https://tophouse.itch.io/femboy-futa-house'},{l:'Honey',u:'https://phantomzz-7.itch.io/honey-kingdom'},{l:'Bunkered',u:'https://pinktwilight.itch.io/bunkered-with-femboy'},{l:'LockDown',u:'https://down-bad-smut-games.itch.io/lockdown-dom-improved'},{l:'Code Pink',u:'https://moonfishgames.itch.io/spacerescuecodepink'},{l:'Another',u:'https://timewizardstudios.itch.io/anotherchance'}];
         const footer = [{l:'Kemono',u:'https://kemono.cr/account/favorites/artists'},{l:'PH',u:'https://www.pornhub.com'},{l:'Coomer',u:'https://coomer.st/account/favorites/artists'},{l:'R34',u:'https://rule34.xxx/'}];
-        let d = JSON.parse(localStorage.getItem('p_data')) || { m: [], a: [] };
+        
+        let d = JSON.parse(localStorage.getItem('p_data')) || { m: defaultMain, a: defaultAlt };
         
         function save() { localStorage.setItem('p_data', JSON.stringify(d)); update(); }
         function add(t) { d[t].push({l:'New', u:'https://'}); save(); render(); }
@@ -35,19 +37,14 @@
                 const c = document.getElementById(t + '-list');
                 c.innerHTML = '';
                 d[t].forEach((it, i) => {
-                    // X button is now right next to the inputs
-                    c.innerHTML += `<div class="row">
-                        <input value="${it.l}" onchange="d['${t}'][${i}].l=this.value; save()"> 
-                        <input value="${it.u}" onchange="d['${t}'][${i}].u=this.value; save()"> 
-                        <button class="del-btn" onclick="del('${t}',${i})">X</button>
-                    </div>`;
+                    c.innerHTML += `<div class="row"><input value="${it.l}" onchange="d['${t}'][${i}].l=this.value; save()"> <input value="${it.u}" onchange="d['${t}'][${i}].u=this.value; save()"> <button class="del-btn" onclick="del('${t}',${i})">X</button></div>`;
                 });
             });
         }
 
         function update() {
             const css = ".cg-o{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999999;display:flex;align-items:center;justify-content:center;}.cg-p{background:#0e0e0e;width:300px;border-radius:10px;color:#fff;overflow:hidden;display:flex;flex-direction:column;}.cg-h{padding:10px;background:#151515;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333;}.cg-l{flex:1;padding:10px;overflow-y:auto;}.cg-btn{width:100%;padding:10px;margin:5px 0;border:0;background:#222;color:#fff;text-align:left;border-radius:6px;}.cg-f{padding:10px;background:#151515;display:flex;justify-content:center;gap:10px;}.cg-fb{width:35px;height:35px;border:0;background:#333;color:#fff;border-radius:8px;}";
-            const js = `(function(){if(document.getElementById('cg-o'))return;const s=document.createElement('style');s.textContent='${css}';document.head.appendChild(s);const o=document.createElement('div');o.className='cg-o';o.id='cg-o';document.body.style.overflow='hidden';const p=document.createElement('div');p.className='cg-p';const h=document.createElement('div');h.className='cg-h';h.innerHTML='<b>Secret Tabs</b>';const x=document.createElement('button');x.innerText='✕';x.style.background='#444';x.style.border='0';x.style.color='#fff';x.style.borderRadius='4px';x.onclick=()=>{document.body.style.overflow='';o.remove();};h.appendChild(x);p.appendChild(h);const l=document.createElement('div');l.className='cg-l';const data={m:${JSON.stringify(d.m)},a:${JSON.stringify(d.a)},f:${JSON.stringify(footer)}};function ren(t){l.innerHTML='';data[t].forEach(i=>{const b=document.createElement('button');b.className='cg-btn';b.innerText=i.l;b.onclick=()=>location.href=i.u;l.appendChild(b);});}ren('m');p.appendChild(l);const f=document.createElement('div');f.className='cg-f';const sw=document.createElement('button');sw.className='cg-fb';sw.innerText='⇆';let cur='m';sw.onclick=()=>{cur=cur=='m'?'a':'m';ren(cur);};f.appendChild(sw);data.f.forEach(i=>{const b=document.createElement('button');b.className='cg-fb';b.innerText=i.l.charAt(0);b.onclick=()=>location.href=i.u;f.appendChild(b);});p.appendChild(f);o.appendChild(p);document.body.appendChild(o);o.onclick=e=>{if(e.target==o){document.body.style.overflow='';o.remove();}};})()`;
+            const js = `(function(){if(document.getElementById('cg-o'))return;const s=document.createElement('style');s.textContent='${css}';document.head.appendChild(s);const o=document.createElement('div');o.className='cg-o';o.id='cg-o';document.body.style.overflow='hidden';const p=document.createElement('div');p.className='cg-p';const h=document.createElement('div');h.className='cg-h';const title=document.createElement('b');title.innerText='Secret Tabs';h.appendChild(title);const x=document.createElement('button');x.innerText='✕';x.style.background='#444';x.style.border='0';x.style.color='#fff';x.style.borderRadius='4px';x.onclick=()=>{document.body.style.overflow='';o.remove();};h.appendChild(x);p.appendChild(h);const l=document.createElement('div');l.className='cg-l';const data={m:${JSON.stringify(d.m)},a:${JSON.stringify(d.a)},f:${JSON.stringify(footer)}};function ren(t){l.innerHTML='';title.innerText=t=='m'?'Secret Tabs':'Itch.io';data[t].forEach(i=>{const b=document.createElement('button');b.className='cg-btn';b.innerText=i.l;b.onclick=()=>location.href=i.u;l.appendChild(b);});}ren('m');p.appendChild(l);const f=document.createElement('div');f.className='cg-f';const sw=document.createElement('button');sw.className='cg-fb';sw.innerText='⇆';sw.onclick=()=>{const n=title.innerText=='Secret Tabs'?'a':'m';ren(n);};f.appendChild(sw);data.f.forEach(i=>{const b=document.createElement('button');b.className='cg-fb';b.innerText=i.l.charAt(0);b.onclick=()=>location.href=i.u;f.appendChild(b);});p.appendChild(f);o.appendChild(p);document.body.appendChild(o);o.onclick=e=>{if(e.target==o){document.body.style.overflow='';o.remove();}};})()`;
             document.getElementById('drag-me').href = 'javascript:' + js;
         }
         render();
