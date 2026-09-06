@@ -115,7 +115,7 @@ button{
 <a id="drag-me" draggable="true">DRAG ME TO BOOKMARKS</a>
 
 <script>
-
+const bookmarkName= 'Tab';
 const defaultMain=[
     {l:'Js UI',u:'https://nobody4939.vercel.app/Index.html'},
     {l:'Pornhub',u:'https://www.pornhub.com'},
@@ -656,11 +656,1404 @@ s.remove();
 
 })()`;
 
-document.getElementById('drag-me').href='javascript:'+js;
+document.getElementById('drag-me').href='javascript:/* https://'+bookmarkName+'/ */'+js;
 }
 
 render();
 update();
+
+</script>
+
+</body>
+</html>tml>tton');
+switchButton.className='portal-fb';
+switchButton.textContent='⇆';
+
+switchButton.onclick=function(){
+
+render(current==='m'?'a':'m');
+
+};
+
+footerBar.appendChild(switchButton);
+
+data.f.forEach(function(item){
+
+const button=document.createElement('button');
+
+button.className='portal-fb';
+
+button.textContent=item.l.charAt(0);
+
+button.onclick=function(){
+
+location.href=item.u;
+
+};
+
+footerBar.appendChild(button);
+
+});
+
+popup.appendChild(header);
+popup.appendChild(list);
+popup.appendChild(footerBar);
+
+overlay.appendChild(popup);
+
+document.body.appendChild(overlay);
+
+document.documentElement.style.overflow='hidden';
+document.body.style.overflow='hidden';
+
+document.documentElement.style.touchAction='none';
+document.body.style.touchAction='none';
+
+overlay.addEventListener('touchmove',function(e){
+
+if(!list.contains(e.target)){
+
+e.preventDefault();
+
+}
+
+},{passive:false});
+
+overlay.addEventListener('wheel',function(e){
+
+if(!list.contains(e.target)){
+
+e.preventDefault();
+
+}
+
+},{passive:false});
+
+overlay.addEventListener('click',function(e){
+
+if(e.target===overlay){
+
+closePopup();
+
+}
+
+});
+
+render('m');
+
+})();`;
+
+    /*
+       Using textContent instead of putting the bookmarklet
+       source into the page prevents accidental HTML rendering.
+    */
+
+    const bookmarklet =
+        'javascript:' +
+        encodeURIComponent(js)
+            .replace(/%20/g,' ');
+
+    const link = document.getElementById('drag-me');
+
+    link.href = bookmarklet;
+}
+
+
+/* INITIALISE */
+
+render();
+update();
+
+</script>
+
+</body>
+</html>* INITIALISE */
+
+render();
+update();
+
+</script>
+
+</body>
+</html>nce'
+    }
+
+];
+
+
+const footer = [
+
+    {
+        l:'Kemono',
+        u:'https://kemono.cr/account/favorites/artists'
+    },
+
+    {
+        l:'PH',
+        u:'https://www.pornhub.com'
+    },
+
+    {
+        l:'Coomer',
+        u:'https://coomer.st/account/favorites/artists'
+    },
+
+    {
+        l:'R34',
+        u:'https://rule34.xxx/index.php?page=post&s=list&tags=+%28+yuri+%7e+futa_on_female+%7e+solo_female+%7e+lesbian+%29+animated+-male+sound&pid=0'
+    }
+
+];
+
+
+/* =========================================================
+   LOAD DATA
+   ========================================================= */
+
+let d;
+
+try{
+
+    const stored =
+        localStorage.getItem('p_data');
+
+    if(stored){
+
+        const parsed =
+            JSON.parse(stored);
+
+        d = {
+
+            m:
+                Array.isArray(parsed.m)
+                    ? parsed.m
+                    : [...defaultMain],
+
+            a:
+                Array.isArray(parsed.a)
+                    ? parsed.a
+                    : [...defaultAlt]
+
+        };
+
+    }else{
+
+        d = {
+
+            m:[...defaultMain],
+            a:[...defaultAlt]
+
+        };
+
+    }
+
+}catch(e){
+
+    d = {
+
+        m:[...defaultMain],
+        a:[...defaultAlt]
+
+    };
+
+}
+
+
+/* =========================================================
+   MANAGER FUNCTIONS
+   ========================================================= */
+
+function save(){
+
+    localStorage.setItem(
+        'p_data',
+        JSON.stringify(d)
+    );
+
+    updateBookmarklet();
+
+}
+
+
+function add(type){
+
+    d[type].push({
+
+        l:'New',
+        u:'https://'
+
+    });
+
+    save();
+    render();
+
+}
+
+
+function del(type,index){
+
+    d[type].splice(
+        index,
+        1
+    );
+
+    save();
+    render();
+
+}
+
+
+/* =========================================================
+   MANAGER RENDER
+   ========================================================= */
+
+function render(){
+
+    ['m','a'].forEach(type=>{
+
+        const container =
+            document.getElementById(
+                type+'-list'
+            );
+
+        container.innerHTML='';
+
+
+        d[type].forEach(
+            (item,index)=>{
+
+                const row =
+                    document.createElement('div');
+
+                row.className='row';
+
+
+                /* Name */
+
+                const name =
+                    document.createElement('input');
+
+                name.className='name-input';
+
+                name.value =
+                    item.l || '';
+
+                name.type='text';
+
+                name.addEventListener(
+                    'change',
+                    ()=>{
+
+                        d[type][index].l =
+                            name.value;
+
+                        save();
+
+                    }
+                );
+
+
+                /* URL */
+
+                const url =
+                    document.createElement('input');
+
+                url.className='url-input';
+
+                url.value =
+                    item.u || '';
+
+                url.type='text';
+
+                url.addEventListener(
+                    'change',
+                    ()=>{
+
+                        d[type][index].u =
+                            url.value;
+
+                        save();
+
+                    }
+                );
+
+
+                /* Delete */
+
+                const remove =
+                    document.createElement('button');
+
+                remove.className='del-btn';
+
+                remove.textContent='X';
+
+                remove.addEventListener(
+                    'click',
+                    ()=>del(type,index)
+                );
+
+
+                row.append(
+                    name,
+                    url,
+                    remove
+                );
+
+                container.appendChild(row);
+
+            }
+        );
+
+    });
+
+}
+
+
+/* =========================================================
+   BOOKMARKLET GENERATOR
+   ========================================================= */
+
+function updateBookmarklet(){
+
+    /*
+     * JSON is embedded directly into the bookmarklet.
+     * This means the bookmarklet contains the current
+     * manager data at the moment it is generated.
+     */
+
+    const mainData =
+        JSON.stringify(d.m);
+
+    const altData =
+        JSON.stringify(d.a);
+
+    const footerData =
+        JSON.stringify(footer);
+
+
+    const css = `
+
+.portal-o{
+position:fixed!important;
+inset:0!important;
+width:100vw!important;
+height:100vh!important;
+
+background:
+radial-gradient(
+circle at 50% 35%,
+rgba(70,70,70,.18),
+rgba(0,0,0,.82) 65%
+)!important;
+
+backdrop-filter:blur(11px)!important;
+-webkit-backdrop-filter:blur(11px)!important;
+
+z-index:2147483647!important;
+
+display:flex!important;
+align-items:flex-end!important;
+justify-content:center!important;
+
+padding:16px 16px 18vh 16px!important;
+
+box-sizing:border-box!important;
+
+overscroll-behavior:none!important;
+touch-action:none!important;
+}
+
+.portal-p{
+display:flex!important;
+flex-direction:column!important;
+
+width:300px!important;
+max-width:calc(100vw - 32px)!important;
+
+max-height:50vh!important;
+min-height:0!important;
+
+background:
+linear-gradient(
+180deg,
+#0d0d0d 0%,
+#080808 100%
+)!important;
+
+color:#fff!important;
+
+overflow:hidden!important;
+
+border-radius:22px!important;
+
+border:1px solid rgba(255,255,255,.06)!important;
+
+box-shadow:
+0 30px 80px rgba(0,0,0,.8),
+0 8px 25px rgba(0,0,0,.6),
+inset 0 1px 0 rgba(255,255,255,.025)!important;
+
+font-family:
+system-ui,
+-apple-system,
+BlinkMacSystemFont,
+"Segoe UI",
+sans-serif!important;
+
+box-sizing:border-box!important;
+
+overscroll-behavior:contain!important;
+
+animation:
+portalPanelOpen
+.28s
+cubic-bezier(.2,.8,.2,1);
+}
+
+.portal-h{
+position:relative!important;
+
+display:flex!important;
+align-items:center!important;
+justify-content:center!important;
+
+min-height:72px!important;
+
+padding:13px 16px!important;
+
+background:
+linear-gradient(
+180deg,
+rgba(255,255,255,.025),
+rgba(255,255,255,.005)
+)!important;
+
+border-bottom:
+1px solid
+rgba(255,255,255,.055)!important;
+
+flex-shrink:0!important;
+
+box-sizing:border-box!important;
+}
+
+.portal-title-wrap{
+width:100%!important;
+
+display:flex!important;
+flex-direction:column!important;
+
+align-items:center!important;
+justify-content:center!important;
+
+text-align:center!important;
+}
+
+.portal-title{
+font-size:17px!important;
+line-height:21px!important;
+font-weight:700!important;
+letter-spacing:.1px!important;
+color:#f4f4f4!important;
+}
+
+.portal-subtitle{
+font-size:10.5px!important;
+line-height:15px!important;
+color:#777!important;
+margin-top:3px!important;
+font-weight:500!important;
+}
+
+.portal-l{
+position:relative!important;
+
+display:flex!important;
+flex-direction:column!important;
+
+flex:1 1 auto!important;
+
+min-height:0!important;
+
+padding:8px 10px 9px!important;
+
+overflow-y:auto!important;
+overflow-x:hidden!important;
+
+scrollbar-width:thin!important;
+scrollbar-color:#333 transparent!important;
+
+overscroll-behavior:contain!important;
+
+touch-action:pan-y!important;
+
+box-sizing:border-box!important;
+}
+
+.portal-l::-webkit-scrollbar{
+width:4px;
+}
+
+.portal-l::-webkit-scrollbar-track{
+background:transparent;
+}
+
+.portal-l::-webkit-scrollbar-thumb{
+background:#333;
+border-radius:20px;
+}
+
+.portal-btn{
+position:relative!important;
+
+display:flex!important;
+align-items:center!important;
+
+width:100%!important;
+
+min-height:52px!important;
+
+padding:10px 12px!important;
+
+margin:3px 0!important;
+
+background:
+linear-gradient(
+135deg,
+#111 0%,
+#0c0c0c 100%
+)!important;
+
+color:#e9e9e9!important;
+
+text-align:left!important;
+
+border-radius:14px!important;
+
+font-size:13px!important;
+font-weight:550!important;
+
+border:
+1px solid
+rgba(255,255,255,.045)!important;
+
+box-shadow:
+0 2px 6px rgba(0,0,0,.25),
+inset 0 1px 0 rgba(255,255,255,.02)!important;
+
+transition:
+transform .14s ease,
+background .14s ease,
+border-color .14s ease,
+box-shadow .14s ease!important;
+
+animation:
+portalItemIn
+.22s
+ease both!important;
+
+user-select:none!important;
+-webkit-user-select:none!important;
+
+touch-action:manipulation!important;
+
+-webkit-tap-highlight-color:transparent!important;
+
+box-sizing:border-box!important;
+}
+
+.portal-btn::before{
+content:attr(data-number)!important;
+
+display:flex!important;
+align-items:center!important;
+justify-content:center!important;
+
+width:25px!important;
+height:25px!important;
+
+flex:none!important;
+
+margin-right:11px!important;
+
+border-radius:8px!important;
+
+background:#090909!important;
+
+border:
+1px solid
+rgba(255,255,255,.035)!important;
+
+color:#888!important;
+
+font-size:10px!important;
+font-weight:700!important;
+}
+
+.portal-btn::after{
+content:"›"!important;
+
+margin-left:auto!important;
+padding-left:10px!important;
+
+color:#5e5e5e!important;
+
+font-size:21px!important;
+line-height:1!important;
+
+font-weight:300!important;
+
+transition:
+transform .14s ease,
+color .14s ease!important;
+}
+
+.portal-btn:hover{
+background:
+linear-gradient(
+135deg,
+#191919,
+#111
+)!important;
+
+border-color:
+rgba(255,255,255,.08)!important;
+
+box-shadow:
+0 4px 12px rgba(0,0,0,.3),
+inset 0 1px 0 rgba(255,255,255,.03)!important;
+}
+
+.portal-btn:hover::after{
+color:#aaa!important;
+transform:translateX(2px)!important;
+}
+
+.portal-btn:active{
+transform:scale(.975)!important;
+background:#1d1d1d!important;
+}
+
+.portal-f{
+display:flex!important;
+align-items:center!important;
+justify-content:center!important;
+
+gap:7px!important;
+
+min-height:61px!important;
+
+padding:9px 10px 10px!important;
+
+background:
+linear-gradient(
+180deg,
+#0d0d0d,
+#090909
+)!important;
+
+border-top:
+1px solid
+rgba(255,255,255,.055)!important;
+
+flex-shrink:0!important;
+
+box-sizing:border-box!important;
+}
+
+.portal-fb,
+.portal-switch{
+position:relative!important;
+
+display:flex!important;
+align-items:center!important;
+justify-content:center!important;
+
+width:43px!important;
+height:39px!important;
+
+padding:0!important;
+
+background:#222!important;
+
+color:#888!important;
+
+border-radius:12px!important;
+
+border:
+1px solid
+rgba(255,255,255,.05)!important;
+
+font-size:12px!important;
+font-weight:700!important;
+
+transition:
+transform .13s ease,
+background .13s ease,
+color .13s ease,
+border-color .13s ease!important;
+
+flex:none!important;
+}
+
+.portal-switch{
+font-size:17px!important;
+}
+
+.portal-fb.active,
+.portal-switch.active{
+background:#e9e9e9!important;
+color:#111!important;
+
+border-color:#fff!important;
+
+box-shadow:
+0 3px 10px rgba(0,0,0,.35),
+inset 0 1px 0 rgba(255,255,255,.5)!important;
+}
+
+.portal-fb:hover,
+.portal-switch:hover{
+background:#2d2d2d!important;
+color:#eee!important;
+}
+
+.portal-fb.active:hover,
+.portal-switch.active:hover{
+background:#fff!important;
+color:#111!important;
+}
+
+.portal-fb:active,
+.portal-switch:active{
+transform:scale(.9)!important;
+}
+
+@keyframes portalPanelOpen{
+from{
+opacity:0;
+transform:
+translateY(16px)
+scale(.96);
+}
+to{
+opacity:1;
+transform:
+translateY(0)
+scale(1);
+}
+}
+
+@keyframes portalItemIn{
+from{
+opacity:0;
+transform:translateY(5px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+@media(max-height:650px){
+.portal-o{
+padding-bottom:12vh!important;
+}
+}
+
+`;
+
+
+    /*
+     * The actual bookmarklet.
+     */
+
+    const js = `(function(){
+
+if(document.getElementById('portal-o'))return;
+
+const oldOverflow=document.body.style.overflow;
+const oldTouch=document.body.style.touchAction;
+
+document.body.style.setProperty(
+'overflow',
+'hidden',
+'important'
+);
+
+document.body.style.setProperty(
+'touch-action',
+'none',
+'important'
+);
+
+const s=document.createElement('style');
+
+s.textContent=${JSON.stringify(css)};
+
+document.head.appendChild(s);
+
+
+const o=document.createElement('div');
+
+o.className='portal-o';
+o.id='portal-o';
+
+
+const p=document.createElement('div');
+
+p.className='portal-p';
+
+
+/* =======================================================
+   HEADER
+   ======================================================= */
+
+const h=document.createElement('div');
+
+h.className='portal-h';
+
+
+const tw=document.createElement('div');
+
+tw.className='portal-title-wrap';
+
+
+const title=document.createElement('div');
+
+title.className='portal-title';
+
+
+const sub=document.createElement('div');
+
+sub.className='portal-subtitle';
+
+
+tw.appendChild(title);
+tw.appendChild(sub);
+
+h.appendChild(tw);
+
+p.appendChild(h);
+
+
+/* =======================================================
+   LIST
+   ======================================================= */
+
+const l=document.createElement('div');
+
+l.className='portal-l';
+
+
+const data={
+m:${mainData},
+a:${altData},
+f:${footerData}
+};
+
+
+let cur='m';
+
+
+function ren(t){
+
+cur=t;
+
+l.innerHTML='';
+
+
+const items=data[t]||[];
+
+
+title.textContent=
+t==='m'
+?'Secret Tabs'
+:'Itch.io';
+
+
+sub.textContent=
+items.length+
+(items.length===1
+?' shortcut'
+:' shortcuts');
+
+
+items.forEach((item,index)=>{
+
+const b=document.createElement('button');
+
+b.className='portal-btn';
+
+b.textContent=item.l||'Untitled';
+
+b.setAttribute(
+'data-number',
+String(index+1).padStart(2,'0')
+);
+
+b.style.animationDelay=
+Math.min(index*25,300)+'ms';
+
+
+let pressTimer=null;
+let longPressed=false;
+
+
+/* ===================================================
+   LONG PRESS
+   =================================================== */
+
+function startPress(e){
+
+if(e.type==='mousedown' && e.button!==0)
+return;
+
+longPressed=false;
+
+pressTimer=setTimeout(()=>{
+
+longPressed=true;
+
+if(item.u && item.u!=='https://'){
+
+window.open(
+item.u,
+'_blank'
+);
+
+}
+
+},550);
+
+}
+
+
+function cancelPress(){
+
+if(pressTimer){
+
+clearTimeout(pressTimer);
+
+pressTimer=null;
+
+}
+
+}
+
+
+/* Touch */
+
+b.addEventListener(
+'touchstart',
+startPress,
+{passive:true}
+);
+
+b.addEventListener(
+'touchend',
+cancelPress
+);
+
+b.addEventListener(
+'touchmove',
+cancelPress
+);
+
+b.addEventListener(
+'touchcancel',
+cancelPress
+);
+
+
+/* Mouse */
+
+b.addEventListener(
+'mousedown',
+startPress
+);
+
+b.addEventListener(
+'mouseup',
+cancelPress
+);
+
+b.addEventListener(
+'mouseleave',
+cancelPress
+);
+
+
+/* Normal click */
+
+b.addEventListener(
+'click',
+function(e){
+
+if(longPressed){
+
+e.preventDefault();
+e.stopPropagation();
+
+longPressed=false;
+
+return;
+
+}
+
+if(item.u && item.u!=='https://'){
+
+location.href=item.u;
+
+}
+
+}
+);
+
+
+l.appendChild(b);
+
+});
+
+}
+
+
+/* =======================================================
+   FOOTER
+   ======================================================= */
+
+const f=document.createElement('div');
+
+f.className='portal-f';
+
+
+const footerButtons=[];
+
+
+/* Switch */
+
+const sw=document.createElement('button');
+
+sw.className='portal-switch';
+
+sw.textContent='⇆';
+
+sw.title='Switch section';
+
+
+sw.onclick=()=>{
+
+ren(
+cur==='m'
+?'a'
+:'m'
+);
+
+};
+
+
+f.appendChild(sw);
+
+footerButtons.push(sw);
+
+
+/* External buttons */
+
+data.f.forEach(item=>{
+
+const b=document.createElement('button');
+
+b.className='portal-fb';
+
+b.textContent=
+(item.l||'?')
+.charAt(0)
+.toUpperCase();
+
+b.title=item.l||'';
+
+
+b.onclick=()=>{
+
+if(item.u){
+
+location.href=item.u;
+
+}
+
+};
+
+
+f.appendChild(b);
+
+});
+
+
+p.appendChild(l);
+
+p.appendChild(f);
+
+o.appendChild(p);
+
+document.body.appendChild(o);
+
+
+/* =======================================================
+   ACTIVE TAB
+   ======================================================= */
+
+function updateActive(){
+
+footerButtons.forEach(
+button=>{
+button.classList.toggle(
+'active',
+button===sw
+);
+}
+);
+
+}
+
+updateActive();
+
+
+/*
+ * Update active switch styling when switching.
+ */
+
+const originalRen=ren;
+
+ren=function(t){
+
+originalRen(t);
+
+updateActive();
+
+};
+
+
+/* Initial */
+
+ren('m');
+
+
+/* =======================================================
+   CLOSE
+   ======================================================= */
+
+function closePopup(){
+
+document.body.style.setProperty(
+'overflow',
+oldOverflow
+);
+
+document.body.style.setProperty(
+'touch-action',
+oldTouch
+);
+
+o.remove();
+
+}
+
+
+/*
+ * Clicking outside panel closes popup.
+ */
+
+o.addEventListener(
+'click',
+function(e){
+
+if(e.target===o){
+
+closePopup();
+
+}
+
+}
+);
+
+
+/*
+ * Prevent touches on popup from leaking
+ * into the page underneath.
+ */
+
+o.addEventListener(
+'touchmove',
+function(e){
+
+if(!e.target.closest('.portal-l')){
+
+e.preventDefault();
+
+}
+
+},
+{passive:false}
+);
+
+
+})()`;
+
+
+    document.getElementById('drag-me').href =
+        'javascript:' + js;
+
+}
+
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
+render();
+
+updateBookmarklet();
+
+</script>
+
+</body>
+</html>Child(sw);
+
+const data=${data};
+
+let cur='m';
+
+const fb=[];
+
+function ren(t){
+
+cur=t;
+
+l.innerHTML='';
+
+const items=data[t]||[];
+
+title.textContent=t==='m'?'Secret Tabs':'Itch.io';
+
+sub.textContent=items.length+(items.length===1?' shortcut':' shortcuts');
+
+items.forEach((i,n)=>{
+
+const b=document.createElement('button');
+
+b.className='portal-btn';
+
+b.textContent=i.l||'Untitled';
+
+b.setAttribute('data-number',String(n+1).padStart(2,'0'));
+
+b.style.animationDelay=Math.min(n*25,300)+'ms';
+
+b.onclick=()=>{
+
+if(i.u&&i.u!=='https://'){
+
+location.href=i.u;
+
+}
+
+};
+
+l.appendChild(b);
+
+});
+
+}
+
+sw.onclick=()=>{
+
+ren(cur==='m'?'a':'m');
+
+};
+
+(data.f||[]).forEach(i=>{
+
+const b=document.createElement('button');
+
+b.className='portal-fb';
+
+b.textContent=(i.l||'?').charAt(0).toUpperCase();
+
+b.title=i.l||'';
+
+b.onclick=()=>{
+
+if(i.u)location.href=i.u;
+
+};
+
+f.appendChild(b);
+
+});
+
+o.appendChild(p);
+
+document.body.appendChild(o);
+
+ren('m');
+
+function close(){
+
+document.body.style.overflow='';
+
+o.remove();
+
+s.remove();
+
+}
+
+o.onclick=e=>{
+
+if(e.target===o)close();
+
+};
+
+document.addEventListener('keydown',function esc(e){
+
+if(e.key==='Escape'){
+
+close();
+
+document.removeEventListener('keydown',esc);
+
+}
+
+});
+
+})()`;
+
+
+    return 'javascript:' + js;
+
+}
+
+
+/* =========================================================
+   UPDATE BOOKMARKLET
+   ========================================================= */
+
+function updateBookmarklet(){
+
+    document.getElementById('drag-me').href =
+        generateBookmarklet();
+
+}
+
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
+render();
+
+updateBookmarklet();
+
+renderPreview();
 
 </script>
 
