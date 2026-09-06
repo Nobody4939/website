@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>JS UI Manager</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+html,
+body{
+  margin:0;
+  padding:0;
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+body{
+  background:#0a0a0a;
+  color:#d1d1d1;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  padding:15px;
+  max-width:500px;
+  margin:auto;
+}
+
+.card{
+  background:#161616;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
+  border:1px solid #222;
+  width:100%;
+  max-width:100%;
+  overflow:hidden;
+}
+
+.row{
+  display:flex;
+  gap:6px;
+  margin-bottom:6px;
+  align-items:center;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+}
+
+input{
+  background:#222;
+  color:#fff;
+  border:1px solid #333;
+  padding:6px;
+  border-radius:4px;
+  font-size:12px;
+  min-width:0;
+  max-width:100%;
+}
+
+input:nth-child(1){
+  width:30%;
+  flex-shrink:1;
+}
+
+input:nth-child(2){
+  flex:1;
+  width:0;
+}
+
+button{
+  background:#333;
+  color:#fff;
+  border:none;
+  padding:6px 8px;
+  cursor:pointer;
+  border-radius:4px;
+  font-size:12px;
+  flex-shrink:0;
+}
+
+.del-btn{
+  background:#552222;
+}
+
+#drag-me{
+  display:block;
+  width:100%;
+  max-width:100%;
+  padding:20px;
+  background:#007bff;
+  color:white;
+  text-align:center;
+  text-decoration:none;
+  border-radius:10px;
+  font-weight:bold;
+  border:2px solid #fff;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Ui Editor</h2>
+
+<div class="card">
+  <h3>Tabs</h3>
+  <div id="m-list"></div>
+  <button onclick="add('m')">+ Add</button>
+</div>
+
+<div class="card">
+  <h3>Itch.io</h3>
+  <div id="a-list"></div>
+  <button onclick="add('a')">+ Add</button>
+</div>
+
+<a id="drag-me" draggable="true">DRAG ME TO BOOKMARKS</a>
+
+<script>
+const defaultMain = [
+  {l:'Js UI',u:'https://nobody4939.vercel.app/Index.html'},
+  {l:'Pornhub',u:'https://www.pornhub.com'},
+  {l:'SimpCity',u:'https://simpcity.cr'},
+  {l:'CreamySpot',u:'https://www.pornhub.com/model/creamy-spot/videos?o=mr'},
+  {l:'YourShyCrush',u:'https://www.pornhub.com/model/yourshycrush'},
+  {l:'LiiMewls',u:'https://www.pornhub.com/model/liimewls/videos'},
+  {l:'ThePerfectStorm14',u:'https://www.pornhub.com/model/theperfectstorm14'},
+  {l:'WowMarie',u:'https://www.pornhub.com/model/wowmarie/videos'},
+  {l:'MeeHutao',u:'https://www.pornhub.com/model/meehutao/videos?o=mr'},
+  {l:'Rosie and Alena',u:'https://www.pornhub.com/model/rosie-and-alena/videos?o=mr'},
+  {l:'20Lesbian25',u:'https://www.pornhub.com/model/20lesbian25'},
+  {l:'Jane Laneee',u:'https://www.pornhub.com/model/jane-laneee/videos?o=mr'},
+  {l:'Lane217',u:'https://www.pornhub.com/model/lane217/videos?o=mr'},
+  {l:'AshMochi69',u:'https://www.pornhub.com/model/ashmochi69/videos?o=mr'},
+  {l:'Eve',u:'https://www.pornhub.com/model/eve/videos?o=mr'},
+  {l:'Leah Meow',u:'https://www.pornhub.com/model/leah-meow?o=mr'},
+  {l:'SpiritJOI',u:'https://www.pornhub.com/model/spiritjoi?o=mr'}
+];
+
+const defaultAlt = [
+  {l:'Hazelnut Latte',u:'https://radlord.itch.io/hazelnut-latte'},
+  {l:'Midnight Shifts with Femboy',u:'https://icanfixthatgames.itch.io/midnight-shifts-with-femboy'},
+  {l:'Haunted by Femboy',u:'https://nuteku.itch.io/haunted-by-femboy'},
+  {l:'Femboy Futa House',u:'https://tophouse.itch.io/femboy-futa-house'},
+  {l:'Honey Kingdom',u:'https://phantomzz-7.itch.io/honey-kingdom'},
+  {l:'Bunkered With Femboy',u:'https://pinktwilight.itch.io/bunkered-with-femboy'},
+  {l:'LockDownDom',u:'https://down-bad-smut-games.itch.io/lockdown-dom-improved'},
+  {l:'Space Rescue Code Pink',u:'https://moonfishgames.itch.io/spacerescuecodepink'},
+  {l:'Another Chance',u:'https://timewizardstudios.itch.io/anotherchance'}
+];
+
+const footer = [
+  {l:'Kemono',u:'https://kemono.cr/account/favorites/artists'},
+  {l:'PH',u:'https://www.pornhub.com'},
+  {l:'Coomer',u:'https://coomer.st/account/favorites/artists'},
+  {l:'R34',u:'https://rule34.xxx/index.php?page=post&s=list&tags=+%28+yuri+%7e+futa_on_female+%7e+solo_female+%7e+lesbian+%29+animated+-male+sound&pid=0'}
+];
+
+let d;
+
+try{
+  d = localStorage.getItem('p_data')
+    ? JSON.parse(localStorage.getItem('p_data'))
+    : {m:defaultMain,a:defaultAlt};
+}catch(e){
+  d = {m:defaultMain,a:defaultAlt};
+}
+
+function save(){
+  localStorage.setItem('p_data',JSON.stringify(d));
+  update();
+}
+
+function add(t){
+  d[t].push({
+    l:'New',
+    u:'https://'
+  });
+
+  save();
+  render();
+}
+
+function del(t,i){
+  d[t].splice(i,1);
+  save();
+  render();
+}
+
+function render(){
+
+  ['m','a'].forEach(t=>{
+
+    const c=document.getElementById(t+'-list');
+    c.replaceChildren();
+
+    d[t].forEach((it,i)=>{
+
+      const row=document.createElement('div');
+      row.className='row';
+
+      const label=document.createElement('input');
+      label.value=it.l;
+
+      label.addEventListener('change',()=>{
+        d[t][i].l=label.value;
+        save();
+      });
+
+      const url=document.createElement('input');
+      url.value=it.u;
+
+      url.addEventListener('change',()=>{
+        d[t][i].u=url.value;
+        save();
+      });
+
+      const remove=document.createElement('button');
+      remove.className='del-btn';
+      remove.textContent='X';
+
+      remove.addEventListener('click',()=>{
+        del(t,i);
+      });
+
+      row.appendChild(label);
+      row.appendChild(url);
+      row.appendChild(remove);
+
+      c.appendChild(row);
+    });
+  });
+}
+
+
+/* -------------------------------------------------
+   BOOKMARKLET GENERATOR
+   ------------------------------------------------- */
+
+function update(){
+
+  /*
+   * Modern popup styling.
+   * These values intentionally remain unchanged.
+   */
+  const css = `
+.portal-o{
+  position:fixed!important;
+  inset:0!important;
+  background:rgba(0,0,0,.72)!important;
+  backdrop-filter:blur(8px)!important;
+  -webkit-backdrop-filter:blur(8px)!important;
+  z-index:2147483647!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:16px!important;
+  box-sizing:border-box!important;
+}
+
+.portal-p{
+  display:flex!important;
+  flex-direction:column!important;
+  background:#101010!important;
+  width:min(350px,100%)!important;
+  max-height:88%!important;
+  border-radius:22px!important;
+  color:#fff!important;
+  overflow:hidden!important;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+  box-sizing:border-box!important;
+  box-shadow:0 20px 60px rgba(0,0,0,.55)!important;
+  animation:panelOpen .22s ease-out!important;
+}
+
+.portal-h{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:center!important;
+  min-height:72px!important;
+  padding:12px 16px!important;
+  background:#151515!important;
+  border-bottom:1px solid rgba(255,255,255,.08)!important;
+  color:#fff!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  position:relative!important;
+  flex-shrink:0!important;
+}
+
+.portal-h b{
+  font-size:17px!important;
+  line-height:1.2!important;
+}
+
+.portal-l{
+  display:flex!important;
+  flex-direction:column!important;
+  flex:1!important;
+  min-height:0!important;
+  padding:10px!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+
+.portal-btn{
+  position:relative!important;
+  display:block!important;
+  width:100%!important;
+  min-height:52px!important;
+  padding:12px 42px 12px 42px!important;
+  margin:4px 0!important;
+  background:#1d1d1d!important;
+  color:#fff!important;
+  text-align:left!important;
+  border-radius:14px!important;
+  font-family:inherit!important;
+  font-size:14px!important;
+  cursor:pointer!important;
+  box-sizing:border-box!important;
+  border:none!important;
+  flex-shrink:0!important;
+  touch-action:pan-y!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  transition:transform .12s ease,background .12s ease!important;
+}
+
+.portal-btn::before{
+  content:counter(portal-items)!important;
+  counter-increment:portal-items!important;
+  position:absolute!important;
+  left:14px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  font-size:11px!important;
+  opacity:.45!important;
+}
+
+.portal-btn::after{
+  content:'›'!important;
+  position:absolute!important;
+  right:15px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  font-size:22px!important;
+  opacity:.45!important;
+}
+
+.portal-l{
+  counter-reset:portal-items!important;
+}
+
+.portal-btn:active{
+  transform:scale(.985)!important;
+  background:#292929!important;
+}
+
+.portal-f{
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:10px!important;
+  background:#151515!important;
+  box-sizing:border-box!important;
+  flex-shrink:0!important;
+  border-top:1px solid rgba(255,255,255,.08)!important;
+}
+
+.portal-fb{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:35px!important;
+  height:35px!important;
+  background:#292929!important;
+  color:#fff!important;
+  border-radius:10px!important;
+  cursor:pointer!important;
+  border:none!important;
+  flex-shrink:0!important;
+}
+
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+@keyframes panelOpen{
+  from{
+    opacity:0;
+    transform:scale(.96) translateY(8px);
+  }
+  to{
+    opacity:1;
+    transform:scale(1) translateY(0);
+  }
+}
+
+@keyframes itemIn{
+  from{
+    opacity:0;
+    transform:translateY(5px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+`;
+
+
+  /*
+   * Escape the CSS so it can safely live inside the
+   * generated bookmarklet string.
+   */
+  const cssJS=JSON.stringify(css);
+
+
+  /*
+   * IMPORTANT:
+   * The generated bookmarklet is built here in JavaScript.
+   * It is NOT inserted into the HTML as an inline attribute.
+   */
+  const js = `(function(){
+if(document.getElementById('portal-o'))return;
+
+const oldBodyOverflow=document.body.style.overflow;
+const oldHtmlOverflow=document.documentElement.style.overflow;
+
+const s=document.createElement('style');
+s.textContent=${cssJS};
+document.head.appendChild(s);
+
+const o=document.createElement('div');
+o.className='portal-o';
+o.id='portal-o';
+
+document.body.style.overflow='hidden';
+document.documentElement.style.overflow='hidden';
+
+const p=document.createElement('div');
+p.className='portal-p';
+
+const h=document.createElement('div');
+h.className='portal-h';
+
+const title=document.createElement('b');
+title.innerText='Secret Tabs';
+
+h.appendChild(title);
+p.appendChild(h);
+
+const l=document.createElement('div');
+l.className='portal-l';
+
+const data={
+m:${JSON.stringify(d.m)},
+a:${JSON.stringify(d.a)},
+f:${JSON.stringify(footer)}
+};
+
+let cur='m';
+
+function closePopup(){
+  document.body.style.overflow=oldBodyOverflow;
+  document.documentElement.style.overflow=oldHtmlOverflow;
+  s.remove();
+  o.remove();
+}
+
+function openLink(url,newTab){
+  if(newTab){
+    const a=document.createElement('a');
+    a.href=url;
+    a.target='_blank';
+    a.rel='noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }else{
+    location.href=url;
+  }
+}
+
+function ren(t){
+
+  l.replaceChildren();
+
+  title.innerText=t==='m'?'Secret Tabs':'Itch.io';
+
+  data[t].forEach(i=>{
+
+    const b=document.createElement('button');
+    b.className='portal-btn';
+    b.innerText=i.l;
+
+    let startX=0;
+    let startY=0;
+    let moved=false;
+    let timer=null;
+
+    function cancel(){
+      moved=true;
+
+      if(timer){
+        clearTimeout(timer);
+        timer=null;
+      }
+    }
+
+    b.addEventListener('touchstart',function(e){
+
+      if(!e.touches.length)return;
+
+      startX=e.touches[0].clientX;
+      startY=e.touches[0].clientY;
+      moved=false;
+
+      timer=setTimeout(function(){
+
+        if(!moved){
+          openLink(i.u,true);
+        }
+
+        timer=null;
+
+      },600);
+
+    },{passive:true});
+
+    b.addEventListener('touchmove',function(e){
+
+      if(!e.touches.length)return;
+
+      const dx=e.touches[0].clientX-startX;
+      const dy=e.touches[0].clientY-startY;
+
+      if(Math.sqrt(dx*dx+dy*dy)>10){
+        cancel();
+      }
+
+    },{passive:true});
+
+    b.addEventListener('touchend',function(e){
+
+      if(timer){
+        clearTimeout(timer);
+        timer=null;
+      }
+
+      if(!moved){
+        openLink(i.u,false);
+      }
+
+    });
+
+    b.addEventListener('touchcancel',cancel);
+
+    b.addEventListener('click',function(e){
+
+      /*
+       * On desktop this handles normal clicks.
+       * On touch devices the touch handlers above handle it.
+       */
+      if(e.detail===0)return;
+
+      openLink(i.u,false);
+
+    });
+
+    l.appendChild(b);
+  });
+}
+
+ren(cur);
+p.appendChild(l);
+
+const f=document.createElement('div');
+f.className='portal-f';
+
+const sw=document.createElement('button');
+sw.className='portal-fb';
+sw.innerText='⇆';
+
+sw.onclick=function(){
+
+  cur=cur==='m'?'a':'m';
+  ren(cur);
+
+};
+
+f.appendChild(sw);
+
+data.f.forEach(i=>{
+
+  const b=document.createElement('button');
+  b.className='portal-fb';
+  b.innerText=i.l.charAt(0);
+
+  b.onclick=function(){
+    location.href=i.u;
+  };
+
+  f.appendChild(b);
+
+});
+
+p.appendChild(f);
+o.appendChild(p);
+document.body.appendChild(o);
+
+o.addEventListener('click',function(e){
+
+  if(e.target===o){
+    closePopup();
+  }
+
+});
+
+})();`;
+
+
+  /*
+   * Set href through the DOM property rather than putting
+   * the enormous bookmarklet inside the HTML markup.
+   *
+   * This is the actual overflow fix.
+   */
+  const drag=document.getElementById('drag-me');
+
+  drag.removeAttribute('href');
+  drag.href='javascript:'+js;
+
+  /*
+   * Keep the generated URL from ever becoming a visible
+   * text/layout element.
+   */
+  drag.style.maxWidth='100%';
+  drag.style.overflow='hidden';
+  drag.style.textOverflow='ellipsis';
+  drag.style.whiteSpace='nowrap';
+}
+
+
+render();
+update();
+</script>
+
+</body>
+</html>
