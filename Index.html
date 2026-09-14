@@ -111,7 +111,11 @@ button{
     <div id="a-list"></div>
     <button onclick="add('a')">+ Add</button>
 </div>
-
+<div class="card">
+    <h3>Footer</h3>
+    <div id="f-list"></div>
+    <button onclick="add('f')">+ Add</button>
+</div>
 <a id="drag-me" draggable="true">DRAG ME TO BOOKMARKS</a>
 
 <script>
@@ -148,7 +152,7 @@ const defaultAlt=[
     {l:'Another Chance',u:'https://timewizardstudios.itch.io/anotherchance'}
 ];
 
-const footer=[
+const defaultFooter=[
     {l:'Kemono',u:'https://kemono.cr/account/favorites/artists'},
     {l:'PH',u:'https://www.pornhub.com'},
     {l:'Coomer',u:'https://coomer.st/account/favorites/artists'},
@@ -159,11 +163,20 @@ let d;
 
 try{
     d=JSON.parse(localStorage.getItem('p_data'));
-    if(!d||!Array.isArray(d.m)||!Array.isArray(d.a))throw new Error();
-}catch(e){
-    d={m:defaultMain,a:defaultAlt};
-}
 
+    if(!d||!Array.isArray(d.m)||!Array.isArray(d.a))
+        throw new Error();
+
+    if(!Array.isArray(d.f))
+        d.f=defaultFooter;
+
+}catch(e){
+    d={
+        m:defaultMain,
+        a:defaultAlt,
+        f:defaultFooter
+    };
+}
 function save(){
     localStorage.setItem('p_data',JSON.stringify(d));
     update();
@@ -183,7 +196,7 @@ function del(t,i){
 
 function render(){
 
-    ['m','a'].forEach(t=>{
+    ['m','a','f'].forEach(t=>{
 
         const c=document.getElementById(t+'-list');
         c.innerHTML='';
@@ -457,7 +470,7 @@ l.className='portal-l';
 const data={
 m:${JSON.stringify(d.m)},
 a:${JSON.stringify(d.a)},
-f:${JSON.stringify(footer)}
+f:${JSON.stringify(d.f)}
 };
 
 let cur='m';
