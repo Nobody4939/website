@@ -41,6 +41,28 @@ body{
     align-items:center;
     width:100%;
     min-width:0;
+    position:relative;
+}
+
+.row.dragging{
+    opacity:.45;
+}
+
+.drag-handle{
+    width:22px;
+    flex-shrink:0;
+    color:#666;
+    text-align:center;
+    font-size:15px;
+    cursor:grab;
+    user-select:none;
+    -webkit-user-select:none;
+    touch-action:none;
+}
+
+.drag-handle:active{
+    cursor:grabbing;
+    color:#aaa;
 }
 
 input{
@@ -53,12 +75,12 @@ input{
     min-width:0;
 }
 
-input:nth-child(1){
+input:nth-of-type(1){
     width:30%;
     flex-shrink:0;
 }
 
-input:nth-child(2){
+input:nth-of-type(2){
     flex:1;
     width:0;
 }
@@ -111,11 +133,13 @@ button{
     <div id="a-list"></div>
     <button onclick="add('a')">+ Add</button>
 </div>
+
 <div class="card">
     <h3>Footer</h3>
     <div id="f-list"></div>
     <button onclick="add('f')">+ Add</button>
 </div>
+
 <a id="drag-me" draggable="true">DRAG ME TO BOOKMARKS</a>
 
 <script>
@@ -162,79 +186,302 @@ const defaultFooter=[
 let d;
 
 try{
+
     d=JSON.parse(localStorage.getItem('p_data'));
 
-    if(!d||!Array.isArray(d.m)||!Array.isArray(d.a))
+    if(
+        !d ||
+        !Array.isArray(d.m) ||
+        !Array.isArray(d.a)
+    ){
         throw new Error();
+    }
 
-    if(!Array.isArray(d.f))
+    if(!Array.isArray(d.f)){
         d.f=defaultFooter;
+    }
 
 }catch(e){
+
     d={
         m:defaultMain,
         a:defaultAlt,
         f:defaultFooter
     };
+
 }
+
 function save(){
     localStorage.setItem('p_data',JSON.stringify(d));
     update();
 }
 
 function add(t){
-    d[t].push({l:'New',u:'https://'});
+
+    d[t].push({
+        l:'New',
+        u:'https://'
+    });
+
     save();
     render();
+
 }
 
 function del(t,i){
+
     d[t].splice(i,1);
+
     save();
     render();
+
 }
+
+
+/* =========================
+   DRAG REORDER
+========================= */
+
+let dragState=null;
+
+function enableDrag(handle,row,t){
+
+    handle.addEventListener('pointerdown',function(e){
+
+        e.preventDefault();
+
+        dragState={
+            row:row,
+            type:t,
+            startX:e.clientX,
+            startY:e.clientY,
+            active:false
+        };
+
+        handle.setPointerCapture?.(e.pointerId);
+
+        function move(ev){
+
+            if(!dragState)return;
+
+            const dx=Math.abs(ev.clientX-dragState.startX);
+            const dy=Math.abs(ev.clientY-dragState.startY);
+
+            if(!dragState.active){
+
+                if(dx<5 && dy<5)return;
+
+                dragState.active=true;
+                row.classList.add('dragging');
+
+            }
+
+            const list=document.getElementById(t+'-list');
+
+            const element=document.elementFromPoint(
+                ev.clientX,
+                ev.clientY
+            );
+
+            const target=element?.closest('.row');
+
+            if(
+                target &&
+                target.parentElement===list &&
+                target!==row
+            ){
+
+                const rect=target.getBoundingClientRect();
+
+                const middle=rect.top+(rect.height/2);
+
+                if(ev.clientY<middle){
+
+                    list.insertBefore(row,target);
+
+                }else{
+
+                    list.insertBefore(row,target.nextSibling);
+
+                }
+
+            }
+
+        }
+
+        function end(){
+
+            if(!dragState)return;
+
+            const state=dragState;
+            dragState=null;
+
+            row.classList.remove('dragging');
+
+            if(!state.active)return;
+
+            const list=document.getElementById(
+                state.type+'-list'
+            );
+
+            const rows=[
+                ...list.querySelectorAll('.row')
+            ];
+
+            const oldData=d[state.type];
+
+            const reordered=rows.map(function(r){
+
+                return oldData[
+                    Number(r.dataset.index)
+                ];
+
+            });
+
+            d[state.type]=reordered;
+
+            save();
+            render();
+
+        }
+
+        function cancel(){
+
+            if(!dragState)return;
+
+            dragState=null;
+            row.classList.remove('dragging');
+
+        }
+
+        document.addEventListener(
+            'pointermove',
+            move,
+            {passive:false}
+        );
+
+        document.addEventListener(
+            'pointerup',
+            function handler(){
+
+                document.removeEventListener(
+                    'pointermove',
+                    move
+                );
+
+                end();
+
+            },
+            {once:true}
+        );
+
+        document.addEventListener(
+            'pointercancel',
+            function handler(){
+
+                document.removeEventListener(
+                    'pointermove',
+                    move
+                );
+
+                cancel();
+
+            },
+            {once:true}
+        );
+
+    });
+
+}
+
+
+/* =========================
+   RENDER MANAGER
+========================= */
 
 function render(){
 
-    ['m','a','f'].forEach(t=>{
+    ['m','a','f'].forEach(function(t){
 
         const c=document.getElementById(t+'-list');
+
         c.innerHTML='';
 
-        d[t].forEach((it,i)=>{
+        d[t].forEach(function(it,i){
 
             const row=document.createElement('div');
+
             row.className='row';
 
+            /*
+            Store the original array index.
+            This lets the drag system reconstruct
+            the new order after moving rows.
+            */
+
+            row.dataset.index=i;
+
+            const handle=document.createElement('div');
+
+            handle.className='drag-handle';
+
+            handle.textContent='☰';
+
             const name=document.createElement('input');
+
             name.value=it.l;
 
-            name.onchange=()=>{
+            name.onchange=function(){
+
                 d[t][i].l=name.value;
+
                 save();
+
             };
 
             const url=document.createElement('input');
+
             url.value=it.u;
 
-            url.onchange=()=>{
+            url.onchange=function(){
+
                 d[t][i].u=url.value;
+
                 save();
+
             };
 
             const remove=document.createElement('button');
-            remove.className='del-btn';
-            remove.textContent='X';
-            remove.onclick=()=>del(t,i);
 
+            remove.className='del-btn';
+
+            remove.textContent='X';
+
+            remove.onclick=function(){
+
+                del(t,i);
+
+            };
+
+            row.appendChild(handle);
             row.appendChild(name);
             row.appendChild(url);
             row.appendChild(remove);
 
             c.appendChild(row);
+
+            enableDrag(handle,row,t);
+
         });
+
     });
+
 }
+
+
+/* =========================
+   GENERATE BOOKMARKLET
+========================= */
 
 function update(){
 
@@ -484,7 +731,10 @@ function addButton(item,index){
 const b=document.createElement('button');
 b.className='portal-btn';
 b.type='button';
-b.setAttribute('data-num',String(index+1).padStart(2,'0'));
+b.setAttribute(
+'data-num',
+String(index+1).padStart(2,'0')
+);
 
 const name=document.createElement('span');
 name.className='portal-name';
@@ -552,11 +802,27 @@ openLink(item.u);
 
 }
 
-b.addEventListener('touchstart',startPress,{passive:true});
-b.addEventListener('touchmove',movePress,{passive:true});
-b.addEventListener('touchend',endPress,{passive:true});
+b.addEventListener(
+'touchstart',
+startPress,
+{passive:true}
+);
 
-b.addEventListener('touchcancel',function(){
+b.addEventListener(
+'touchmove',
+movePress,
+{passive:true}
+);
+
+b.addEventListener(
+'touchend',
+endPress,
+{passive:true}
+);
+
+b.addEventListener(
+'touchcancel',
+function(){
 
 moved=true;
 
@@ -565,13 +831,28 @@ clearTimeout(timer);
 timer=null;
 }
 
-},{passive:true});
+},
+{passive:true}
+);
 
-b.addEventListener('mousedown',startPress);
-b.addEventListener('mousemove',movePress);
-b.addEventListener('mouseup',endPress);
+b.addEventListener(
+'mousedown',
+startPress
+);
 
-b.addEventListener('mouseleave',function(){
+b.addEventListener(
+'mousemove',
+movePress
+);
+
+b.addEventListener(
+'mouseup',
+endPress
+);
+
+b.addEventListener(
+'mouseleave',
+function(){
 
 if(timer){
 clearTimeout(timer);
@@ -587,10 +868,18 @@ l.appendChild(b);
 function ren(t){
 
 cur=t;
+
 l.innerHTML='';
 
-title.innerText=t==='m'?'Secret Tabs':'Itch.io';
-sub.innerText=t==='m'?'Quick access':'Games & links';
+title.innerText=
+t==='m'
+?'Secret Tabs'
+:'Itch.io';
+
+sub.innerText=
+t==='m'
+?'Quick access'
+:'Games & links';
 
 data[t].forEach(addButton);
 
@@ -621,8 +910,10 @@ f.appendChild(sw);
 data.f.forEach(function(item){
 
 const b=document.createElement('button');
+
 b.className='portal-fb';
 b.type='button';
+
 b.innerText=item.l.charAt(0);
 
 b.onclick=function(){
@@ -637,23 +928,33 @@ p.appendChild(f);
 o.appendChild(p);
 document.body.appendChild(o);
 
-o.addEventListener('touchmove',function(e){
+o.addEventListener(
+'touchmove',
+function(e){
 
 if(!l.contains(e.target)){
 e.preventDefault();
 }
 
-},{passive:false});
+},
+{passive:false}
+);
 
-o.addEventListener('wheel',function(e){
+o.addEventListener(
+'wheel',
+function(e){
 
 if(!l.contains(e.target)){
 e.preventDefault();
 }
 
-},{passive:false});
+},
+{passive:false}
+);
 
-o.addEventListener('click',function(e){
+o.addEventListener(
+'click',
+function(e){
 
 if(e.target===o){
 
@@ -669,7 +970,17 @@ s.remove();
 
 })()`;
 
-document.getElementById('drag-me').href='javascript:/* https://Tab/*/'+js;
+/*
+Samsung Internet uses the first URL-looking text
+inside the bookmarklet for the bookmark name.
+
+Keep this fake URL if you want the bookmark to appear
+as "Tab" in Samsung Internet.
+*/
+
+document.getElementById('drag-me').href=
+'javascript:/* https://Tab/*/'+js;
+
 }
 
 render();
