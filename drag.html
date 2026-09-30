@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floating Text Tool</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        background: #0a0a0a;
+        color: #fff;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    /* Floating button */
+    #textFloatButton {
+        position: fixed;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+
+        width: 58px;
+        height: 58px;
+
+        border: 1px solid rgba(255,255,255,.15);
+        border-radius: 50%;
+
+        background: rgba(30,30,30,.92);
+        color: white;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 25px;
+
+        box-shadow:
+            0 8px 30px rgba(0,0,0,.45),
+            inset 0 1px 1px rgba(255,255,255,.08);
+
+        backdrop-filter: blur(12px);
+
+        z-index: 999999;
+
+        user-select: none;
+        -webkit-user-select: none;
+
+        touch-action: none;
+
+        cursor: grab;
+
+        transition:
+            transform .15s ease,
+            background .15s ease;
+    }
+
+    #textFloatButton:active {
+        cursor: grabbing;
+        transform: translateY(-50%) scale(.94);
+    }
+
+    /* Input panel */
+    #textPanel {
+        position: fixed;
+
+        left: 50%;
+        bottom: 20px;
+
+        transform: translateX(-50%) translateY(20px);
+
+        width: min(500px, calc(100vw - 30px));
+
+        background: rgba(22,22,22,.97);
+
+        border: 1px solid #2c2c2c;
+        border-radius: 16px;
+
+        padding: 16px;
+
+        box-shadow: 0 20px 60px rgba(0,0,0,.65);
+
+        backdrop-filter: blur(20px);
+
+        z-index: 999998;
+
+        opacity: 0;
+        pointer-events: none;
+
+        transition:
+            opacity .2s ease,
+            transform .2s ease;
+    }
+
+    #textPanel.open {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .panelHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        margin-bottom: 12px;
+    }
+
+    .panelTitle {
+        font-size: 17px;
+        font-weight: 650;
+    }
+
+    #closePanel {
+        width: 32px;
+        height: 32px;
+
+        border: none;
+        border-radius: 50%;
+
+        background: #292929;
+        color: #aaa;
+
+        font-size: 18px;
+
+        cursor: pointer;
+    }
+
+    #closePanel:active {
+        background: #3a3a3a;
+    }
+
+    #textInput {
+        width: 100%;
+
+        min-height: 180px;
+        max-height: 65vh;
+
+        resize: vertical;
+
+        padding: 13px;
+
+        border-radius: 11px;
+        border: 1px solid #303030;
+
+        background: #0d0d0d;
+        color: #fff;
+
+        outline: none;
+
+        font: inherit;
+        font-size: 15px;
+        line-height: 1.5;
+
+        overflow: auto;
+    }
+
+    #textInput:focus {
+        border-color: #555;
+    }
+
+    #textInput::placeholder {
+        color: #666;
+    }
+
+    .panelBottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        margin-top: 10px;
+
+        gap: 10px;
+    }
+
+    #counter {
+        color: #777;
+        font-size: 12px;
+
+        white-space: nowrap;
+    }
+
+    .actions {
+        display: flex;
+        gap: 7px;
+    }
+
+    .actionButton {
+        border: 1px solid #333;
+
+        border-radius: 9px;
+
+        padding: 8px 12px;
+
+        background: #202020;
+        color: #eee;
+
+        font: inherit;
+        font-size: 13px;
+
+        cursor: pointer;
+    }
+
+    .actionButton:active {
+        background: #303030;
+        transform: scale(.97);
+    }
+
+    .actionButton.primary {
+        background: #fff;
+        color: #000;
+        border-color: #fff;
+    }
+</style>
+</head>
+
+<body>
+
+<!-- Floating button -->
+<div id="textFloatButton" aria-label="Open text input">
+    ✎
+</div>
+
+<!-- Text panel -->
+<div id="textPanel">
+
+    <div class="panelHeader">
+        <div class="panelTitle">Text Input</div>
+
+        <button id="closePanel">×</button>
+    </div>
+
+    <textarea
+        id="textInput"
+        placeholder="Type or paste anything..."
+        spellcheck="false"
+    ></textarea>
+
+    <div class="panelBottom">
+
+        <div id="counter">
+            0 characters · 0 words
+        </div>
+
+        <div class="actions">
+
+            <button
+                class="actionButton"
+                id="clearButton">
+                Clear
+            </button>
+
+            <button
+                class="actionButton primary"
+                id="copyButton">
+                Copy
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+(function () {
+
+    const button = document.getElementById("textFloatButton");
+    const panel = document.getElementById("textPanel");
+    const input = document.getElementById("textInput");
+
+    const closeButton = document.getElementById("closePanel");
+    const clearButton = document.getElementById("clearButton");
+    const copyButton = document.getElementById("copyButton");
+    const counter = document.getElementById("counter");
+
+
+    /* -----------------------------
+       Open / close
+    ----------------------------- */
+
+    button.addEventListener("click", function () {
+        panel.classList.toggle("open");
+
+        if (panel.classList.contains("open")) {
+            setTimeout(() => input.focus(), 150);
+        }
+    });
+
+    closeButton.addEventListener("click", function () {
+        panel.classList.remove("open");
+    });
+
+
+    /* -----------------------------
+       Text counter
+    ----------------------------- */
+
+    function updateCounter() {
+
+        const text = input.value;
+
+        const characters = text.length;
+
+        const words = text.trim()
+            ? text.trim().split(/\s+/).length
+            : 0;
+
+        counter.textContent =
+            characters.toLocaleString() +
+            " characters · " +
+            words.toLocaleString() +
+            " words";
+    }
+
+    input.addEventListener("input", updateCounter);
+
+
+    /* -----------------------------
+       Clear
+    ----------------------------- */
+
+    clearButton.addEventListener("click", function () {
+
+        input.value = "";
+
+        updateCounter();
+
+        input.focus();
+    });
+
+
+    /* -----------------------------
+       Copy
+    ----------------------------- */
+
+    copyButton.addEventListener("click", async function () {
+
+        try {
+
+            await navigator.clipboard.writeText(input.value);
+
+            const oldText = copyButton.textContent;
+
+            copyButton.textContent = "Copied ✓";
+
+            setTimeout(() => {
+                copyButton.textContent = oldText;
+            }, 1200);
+
+        } catch (error) {
+
+            /*
+             * Fallback for browsers where
+             * navigator.clipboard is unavailable.
+             */
+
+            input.select();
+            document.execCommand("copy");
+
+            copyButton.textContent = "Copied ✓";
+
+            setTimeout(() => {
+                copyButton.textContent = "Copy";
+            }, 1200);
+        }
+    });
+
+
+    /* -----------------------------
+       Draggable button
+    ----------------------------- */
+
+    let dragging = false;
+
+    let startX = 0;
+    let startY = 0;
+
+    let startLeft = 0;
+    let startTop = 0;
+
+    let moved = false;
+
+
+    function pointerDown(event) {
+
+        dragging = true;
+        moved = false;
+
+        const point = event.touches
+            ? event.touches[0]
+            : event;
+
+        startX = point.clientX;
+        startY = point.clientY;
+
+        const rect = button.getBoundingClientRect();
+
+        startLeft = rect.left;
+        startTop = rect.top;
+
+        button.style.transition = "none";
+
+        event.preventDefault();
+    }
+
+
+    function pointerMove(event) {
+
+        if (!dragging) return;
+
+        const point = event.touches
+            ? event.touches[0]
+            : event;
+
+        const dx = point.clientX - startX;
+        const dy = point.clientY - startY;
+
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            moved = true;
+        }
+
+        let newLeft = startLeft + dx;
+        let newTop = startTop + dy;
+
+
+        /* Keep button inside screen */
+
+        const size = button.offsetWidth;
+
+        newLeft = Math.max(
+            0,
+            Math.min(
+                window.innerWidth - size,
+                newLeft
+            )
+        );
+
+        newTop = Math.max(
+            0,
+            Math.min(
+                window.innerHeight - size,
+                newTop
+            )
+        );
+
+
+        button.style.left = newLeft + "px";
+        button.style.top = newTop + "px";
+
+        button.style.transform = "none";
+
+        event.preventDefault();
+    }
+
+
+    function pointerUp() {
+
+        if (!dragging) return;
+
+        dragging = false;
+
+        button.style.transition = "";
+
+        /* Save position */
+
+        localStorage.setItem(
+            "floatingTextButtonPosition",
+            JSON.stringify({
+                left: button.offsetLeft,
+                top: button.offsetTop
+            })
+        );
+
+
+        /*
+         * If the finger didn't move,
+         * treat it as a normal tap.
+         */
+
+        if (!moved) {
+            panel.classList.toggle("open");
+
+            if (panel.classList.contains("open")) {
+                setTimeout(() => input.focus(), 150);
+            }
+        }
+    }
+
+
+    button.addEventListener(
+        "mousedown",
+        pointerDown
+    );
+
+    document.addEventListener(
+        "mousemove",
+        pointerMove
+    );
+
+    document.addEventListener(
+        "mouseup",
+        pointerUp
+    );
+
+
+    button.addEventListener(
+        "touchstart",
+        pointerDown,
+        { passive: false }
+    );
+
+    document.addEventListener(
+        "touchmove",
+        pointerMove,
+        { passive: false }
+    );
+
+    document.addEventListener(
+        "touchend",
+        pointerUp
+    );
+
+
+    /* -----------------------------
+       Restore button position
+    ----------------------------- */
+
+    try {
+
+        const saved =
+            JSON.parse(
+                localStorage.getItem(
+                    "floatingTextButtonPosition"
+                )
+            );
+
+        if (
+            saved &&
+            typeof saved.left === "number" &&
+            typeof saved.top === "number"
+        ) {
+
+            const size = 58;
+
+            button.style.left =
+                Math.min(
+                    saved.left,
+                    window.innerWidth - size
+                ) + "px";
+
+            button.style.top =
+                Math.min(
+                    saved.top,
+                    window.innerHeight - size
+                ) + "px";
+
+            button.style.transform = "none";
+        }
+
+    } catch (e) {}
+
+})();
+</script>
+
+</body>
+</html>
