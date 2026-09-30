@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Floating Text Tool</title>
+
+<title>Bookmarklet Generator</title>
 
 <style>
     * {
@@ -12,139 +13,53 @@
 
     body {
         margin: 0;
+        padding: 18px;
+
         background: #0a0a0a;
         color: #fff;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+        font-family:
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
+
+        max-width: 600px;
+        margin-inline: auto;
     }
 
-    /* Floating button */
-    #textFloatButton {
-        position: fixed;
-        left: 20px;
-        top: 50%;
-        transform: translateY(-50%);
-
-        width: 58px;
-        height: 58px;
-
-        border: 1px solid rgba(255,255,255,.15);
-        border-radius: 50%;
-
-        background: rgba(30,30,30,.92);
-        color: white;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        font-size: 25px;
-
-        box-shadow:
-            0 8px 30px rgba(0,0,0,.45),
-            inset 0 1px 1px rgba(255,255,255,.08);
-
-        backdrop-filter: blur(12px);
-
-        z-index: 999999;
-
-        user-select: none;
-        -webkit-user-select: none;
-
-        touch-action: none;
-
-        cursor: grab;
-
-        transition:
-            transform .15s ease,
-            background .15s ease;
-    }
-
-    #textFloatButton:active {
-        cursor: grabbing;
-        transform: translateY(-50%) scale(.94);
-    }
-
-    /* Input panel */
-    #textPanel {
-        position: fixed;
-
-        left: 50%;
-        bottom: 20px;
-
-        transform: translateX(-50%) translateY(20px);
-
-        width: min(500px, calc(100vw - 30px));
-
-        background: rgba(22,22,22,.97);
-
-        border: 1px solid #2c2c2c;
-        border-radius: 16px;
-
+    .card {
+        background: #161616;
+        border: 1px solid #262626;
+        border-radius: 14px;
         padding: 16px;
-
-        box-shadow: 0 20px 60px rgba(0,0,0,.65);
-
-        backdrop-filter: blur(20px);
-
-        z-index: 999998;
-
-        opacity: 0;
-        pointer-events: none;
-
-        transition:
-            opacity .2s ease,
-            transform .2s ease;
+        margin-bottom: 14px;
     }
 
-    #textPanel.open {
-        opacity: 1;
-        pointer-events: auto;
-        transform: translateX(-50%) translateY(0);
+    h1 {
+        font-size: 20px;
+        margin: 0 0 6px;
     }
 
-    .panelHeader {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-
-        margin-bottom: 12px;
+    .subtitle {
+        color: #888;
+        font-size: 13px;
+        line-height: 1.45;
+        margin-bottom: 15px;
     }
 
-    .panelTitle {
-        font-size: 17px;
-        font-weight: 650;
-    }
-
-    #closePanel {
-        width: 32px;
-        height: 32px;
-
-        border: none;
-        border-radius: 50%;
-
-        background: #292929;
-        color: #aaa;
-
-        font-size: 18px;
-
-        cursor: pointer;
-    }
-
-    #closePanel:active {
-        background: #3a3a3a;
-    }
-
-    #textInput {
+    textarea {
         width: 100%;
 
-        min-height: 180px;
-        max-height: 65vh;
+        min-height: 280px;
+        max-height: 70vh;
 
         resize: vertical;
 
         padding: 13px;
 
-        border-radius: 11px;
+        border-radius: 10px;
         border: 1px solid #303030;
 
         background: #0d0d0d;
@@ -152,419 +67,339 @@
 
         outline: none;
 
-        font: inherit;
-        font-size: 15px;
-        line-height: 1.5;
+        font-family:
+            ui-monospace,
+            SFMono-Regular,
+            Menlo,
+            Monaco,
+            Consolas,
+            monospace;
 
-        overflow: auto;
+        font-size: 13px;
+        line-height: 1.55;
     }
 
-    #textInput:focus {
+    textarea:focus {
         border-color: #555;
     }
 
-    #textInput::placeholder {
-        color: #666;
+    textarea::placeholder {
+        color: #555;
     }
 
-    .panelBottom {
+    .info {
         display: flex;
-        align-items: center;
         justify-content: space-between;
-
-        margin-top: 10px;
-
         gap: 10px;
-    }
 
-    #counter {
         color: #777;
+
         font-size: 12px;
 
-        white-space: nowrap;
+        margin-top: 8px;
     }
 
-    .actions {
-        display: flex;
-        gap: 7px;
+    .generate {
+        width: 100%;
+
+        border: none;
+        border-radius: 10px;
+
+        padding: 12px;
+
+        background: #fff;
+        color: #000;
+
+        font-size: 14px;
+        font-weight: 650;
+
+        cursor: pointer;
+
+        margin-top: 14px;
     }
 
-    .actionButton {
-        border: 1px solid #333;
+    .generate:active {
+        transform: scale(.98);
+    }
+
+    #result {
+        display: none;
+    }
+
+    .dragArea {
+        text-align: center;
+    }
+
+    .dragHint {
+        color: #888;
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+
+    /*
+     * The actual draggable bookmarklet link.
+     */
+    #bookmarklet {
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        min-width: 170px;
+
+        padding: 11px 18px;
+
+        border-radius: 10px;
+
+        background: #222;
+        border: 1px solid #3a3a3a;
+
+        color: #fff;
+
+        text-decoration: none;
+
+        font-size: 14px;
+        font-weight: 600;
+
+        cursor: grab;
+
+        user-select: none;
+        -webkit-user-select: none;
+
+        box-shadow:
+            0 5px 20px rgba(0,0,0,.35);
+
+        transition:
+            transform .15s ease,
+            background .15s ease;
+    }
+
+    #bookmarklet:hover {
+        background: #2b2b2b;
+    }
+
+    #bookmarklet:active {
+        cursor: grabbing;
+        transform: scale(.96);
+    }
+
+    .warning {
+        margin-top: 13px;
+
+        padding: 10px;
 
         border-radius: 9px;
 
-        padding: 8px 12px;
+        background: #1d1d1d;
 
-        background: #202020;
-        color: #eee;
+        color: #999;
 
-        font: inherit;
-        font-size: 13px;
-
-        cursor: pointer;
+        font-size: 12px;
+        line-height: 1.45;
     }
 
-    .actionButton:active {
-        background: #303030;
-        transform: scale(.97);
-    }
+    .codeSize {
+        margin-top: 10px;
 
-    .actionButton.primary {
-        background: #fff;
-        color: #000;
-        border-color: #fff;
+        color: #666;
+
+        font-size: 11px;
+        text-align: center;
+
+        word-break: break-all;
     }
 </style>
 </head>
 
 <body>
 
-<!-- Floating button -->
-<div id="textFloatButton" aria-label="Open text input">
-    ✎
-</div>
+<div class="card">
 
-<!-- Text panel -->
-<div id="textPanel">
+    <h1>Bookmarklet Generator</h1>
 
-    <div class="panelHeader">
-        <div class="panelTitle">Text Input</div>
-
-        <button id="closePanel">×</button>
+    <div class="subtitle">
+        Enter JavaScript below and generate a bookmarklet you can
+        drag directly into your browser's bookmark bar.
     </div>
 
     <textarea
-        id="textInput"
-        placeholder="Type or paste anything..."
+        id="code"
         spellcheck="false"
+        placeholder="// Put your JavaScript here
+
+alert('Hello!');
+
+// Multiline code is supported.
+// Large scripts are supported too."
     ></textarea>
 
-    <div class="panelBottom">
+    <div class="info">
+        <span id="charCount">0 characters</span>
+        <span id="lineCount">0 lines</span>
+    </div>
 
-        <div id="counter">
-            0 characters · 0 words
+    <button
+        class="generate"
+        id="generate">
+        Generate Bookmarklet
+    </button>
+
+</div>
+
+
+<div class="card" id="result">
+
+    <div class="dragArea">
+
+        <div class="dragHint">
+            Drag this button to your bookmark bar
         </div>
 
-        <div class="actions">
+        <a
+            id="bookmarklet"
+            href="#">
+            ★ Drag Me
+        </a>
 
-            <button
-                class="actionButton"
-                id="clearButton">
-                Clear
-            </button>
+        <div class="codeSize" id="codeSize"></div>
 
-            <button
-                class="actionButton primary"
-                id="copyButton">
-                Copy
-            </button>
-
+        <div class="warning">
+            The generated bookmark executes JavaScript on the
+            current webpage. Only use code you trust.
         </div>
 
     </div>
 
 </div>
 
+
 <script>
+
 (function () {
 
-    const button = document.getElementById("textFloatButton");
-    const panel = document.getElementById("textPanel");
-    const input = document.getElementById("textInput");
+    const textarea =
+        document.getElementById("code");
 
-    const closeButton = document.getElementById("closePanel");
-    const clearButton = document.getElementById("clearButton");
-    const copyButton = document.getElementById("copyButton");
-    const counter = document.getElementById("counter");
+    const generate =
+        document.getElementById("generate");
 
+    const result =
+        document.getElementById("result");
 
-    /* -----------------------------
-       Open / close
-    ----------------------------- */
+    const bookmark =
+        document.getElementById("bookmarklet");
 
-    button.addEventListener("click", function () {
-        panel.classList.toggle("open");
+    const charCount =
+        document.getElementById("charCount");
 
-        if (panel.classList.contains("open")) {
-            setTimeout(() => input.focus(), 150);
-        }
-    });
+    const lineCount =
+        document.getElementById("lineCount");
 
-    closeButton.addEventListener("click", function () {
-        panel.classList.remove("open");
-    });
+    const codeSize =
+        document.getElementById("codeSize");
 
 
-    /* -----------------------------
-       Text counter
-    ----------------------------- */
+    /*
+     * Live statistics
+     */
 
-    function updateCounter() {
+    function updateStats() {
 
-        const text = input.value;
+        const code = textarea.value;
 
-        const characters = text.length;
+        charCount.textContent =
+            code.length.toLocaleString() +
+            " characters";
 
-        const words = text.trim()
-            ? text.trim().split(/\s+/).length
-            : 0;
-
-        counter.textContent =
-            characters.toLocaleString() +
-            " characters · " +
-            words.toLocaleString() +
-            " words";
+        lineCount.textContent =
+            (code ? code.split(/\r\n|\r|\n/).length : 0) +
+            " lines";
     }
 
-    input.addEventListener("input", updateCounter);
+    textarea.addEventListener(
+        "input",
+        updateStats
+    );
+
+    updateStats();
 
 
-    /* -----------------------------
-       Clear
-    ----------------------------- */
+    /*
+     * Generate bookmarklet
+     *
+     * The user's JavaScript is placed inside an
+     * immediately-invoked function.
+     *
+     * encodeURIComponent() isn't used on the
+     * JavaScript itself because the bookmarklet
+     * needs to execute as JavaScript rather than
+     * becoming a URL-encoded string.
+     */
 
-    clearButton.addEventListener("click", function () {
-
-        input.value = "";
-
-        updateCounter();
-
-        input.focus();
-    });
-
-
-    /* -----------------------------
-       Copy
-    ----------------------------- */
-
-    copyButton.addEventListener("click", async function () {
-
-        try {
-
-            await navigator.clipboard.writeText(input.value);
-
-            const oldText = copyButton.textContent;
-
-            copyButton.textContent = "Copied ✓";
-
-            setTimeout(() => {
-                copyButton.textContent = oldText;
-            }, 1200);
-
-        } catch (error) {
-
-            /*
-             * Fallback for browsers where
-             * navigator.clipboard is unavailable.
-             */
-
-            input.select();
-            document.execCommand("copy");
-
-            copyButton.textContent = "Copied ✓";
-
-            setTimeout(() => {
-                copyButton.textContent = "Copy";
-            }, 1200);
-        }
-    });
-
-
-    /* -----------------------------
-       Draggable button
-    ----------------------------- */
-
-    let dragging = false;
-
-    let startX = 0;
-    let startY = 0;
-
-    let startLeft = 0;
-    let startTop = 0;
-
-    let moved = false;
-
-
-    function pointerDown(event) {
-
-        dragging = true;
-        moved = false;
-
-        const point = event.touches
-            ? event.touches[0]
-            : event;
-
-        startX = point.clientX;
-        startY = point.clientY;
-
-        const rect = button.getBoundingClientRect();
-
-        startLeft = rect.left;
-        startTop = rect.top;
-
-        button.style.transition = "none";
-
-        event.preventDefault();
-    }
-
-
-    function pointerMove(event) {
-
-        if (!dragging) return;
-
-        const point = event.touches
-            ? event.touches[0]
-            : event;
-
-        const dx = point.clientX - startX;
-        const dy = point.clientY - startY;
-
-        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-            moved = true;
-        }
-
-        let newLeft = startLeft + dx;
-        let newTop = startTop + dy;
-
-
-        /* Keep button inside screen */
-
-        const size = button.offsetWidth;
-
-        newLeft = Math.max(
-            0,
-            Math.min(
-                window.innerWidth - size,
-                newLeft
-            )
-        );
-
-        newTop = Math.max(
-            0,
-            Math.min(
-                window.innerHeight - size,
-                newTop
-            )
-        );
-
-
-        button.style.left = newLeft + "px";
-        button.style.top = newTop + "px";
-
-        button.style.transform = "none";
-
-        event.preventDefault();
-    }
-
-
-    function pointerUp() {
-
-        if (!dragging) return;
-
-        dragging = false;
-
-        button.style.transition = "";
-
-        /* Save position */
-
-        localStorage.setItem(
-            "floatingTextButtonPosition",
-            JSON.stringify({
-                left: button.offsetLeft,
-                top: button.offsetTop
-            })
-        );
-
+    function createBookmarklet(code) {
 
         /*
-         * If the finger didn't move,
-         * treat it as a normal tap.
+         * Remove a possible BOM.
          */
+        code = code.replace(/^\uFEFF/, "");
 
-        if (!moved) {
-            panel.classList.toggle("open");
-
-            if (panel.classList.contains("open")) {
-                setTimeout(() => input.focus(), 150);
-            }
-        }
+        /*
+         * Wrap user code.
+         *
+         * The void operator makes the bookmarklet
+         * return undefined, preventing the browser
+         * from replacing the current page with a
+         * returned string.
+         */
+        return "javascript:(()=>{"
+            + code
+            + "\n})()";
     }
 
 
-    button.addEventListener(
-        "mousedown",
-        pointerDown
-    );
+    /*
+     * Generate
+     */
 
-    document.addEventListener(
-        "mousemove",
-        pointerMove
-    );
+    generate.addEventListener(
+        "click",
+        function () {
 
-    document.addEventListener(
-        "mouseup",
-        pointerUp
-    );
+            const code = textarea.value;
 
+            if (!code.trim()) {
 
-    button.addEventListener(
-        "touchstart",
-        pointerDown,
-        { passive: false }
-    );
+                textarea.focus();
 
-    document.addEventListener(
-        "touchmove",
-        pointerMove,
-        { passive: false }
-    );
+                return;
+            }
 
-    document.addEventListener(
-        "touchend",
-        pointerUp
-    );
+            const bookmarklet =
+                createBookmarklet(code);
 
+            /*
+             * Set the href directly.
+             *
+             * This is what makes the <a> element
+             * draggable into the browser bookmark bar.
+             */
+            bookmark.href = bookmarklet;
 
-    /* -----------------------------
-       Restore button position
-    ----------------------------- */
+            codeSize.textContent =
+                bookmarklet.length.toLocaleString() +
+                " characters in generated bookmarklet";
 
-    try {
+            result.style.display = "block";
 
-        const saved =
-            JSON.parse(
-                localStorage.getItem(
-                    "floatingTextButtonPosition"
-                )
-            );
-
-        if (
-            saved &&
-            typeof saved.left === "number" &&
-            typeof saved.top === "number"
-        ) {
-
-            const size = 58;
-
-            button.style.left =
-                Math.min(
-                    saved.left,
-                    window.innerWidth - size
-                ) + "px";
-
-            button.style.top =
-                Math.min(
-                    saved.top,
-                    window.innerHeight - size
-                ) + "px";
-
-            button.style.transform = "none";
+            result.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest"
+            });
         }
-
-    } catch (e) {}
+    );
 
 })();
+
 </script>
 
 </body>
